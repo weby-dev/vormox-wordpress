@@ -12,13 +12,17 @@ namespace CloudVmManager\ServiceProvider;
 
 use CloudVmManager\Admin\View;
 use CloudVmManager\Ajax\DashboardAjaxController;
+use CloudVmManager\Ajax\VmControlAjaxController;
 use CloudVmManager\Container\AbstractServiceProvider;
 use CloudVmManager\Container\Container;
+use CloudVmManager\Contracts\LoggerInterface;
 use CloudVmManager\Frontend\Dashboard;
+use CloudVmManager\Repository\IsoTemplateRepository;
 use CloudVmManager\Repository\LogRepository;
 use CloudVmManager\Repository\ProviderRepository;
 use CloudVmManager\Repository\VmOrderRepository;
 use CloudVmManager\Service\Provider\ProviderGateway;
+use CloudVmManager\Service\Vm\VmControlService;
 use CloudVmManager\Service\Vm\VmMetricsService;
 use CloudVmManager\Service\Vm\VmService;
 use CloudVmManager\Service\Vm\WalletService;
@@ -67,15 +71,41 @@ final class FrontendServiceProvider extends AbstractServiceProvider
         );
 
         $container->singleton(
+            VmControlService::class,
+            static function (Container $c): VmControlService {
+                return new VmControlService(
+                    $c->get(ProviderGateway::class),
+                    $c->get(VmService::class),
+                    $c->get(IsoTemplateRepository::class),
+                    $c->get(VmOrderRepository::class),
+                    $c->get(Cache::class),
+                    $c->get(LoggerInterface::class)
+                );
+            }
+        );
+
+        $container->singleton(
             Dashboard::class,
             static function (Container $c): Dashboard {
                 return new Dashboard(
                     $c->get(VmService::class),
                     $c->get(VmMetricsService::class),
+                    $c->get(VmControlService::class),
                     $c->get(WalletService::class),
                     $c->get(LogRepository::class),
                     $c->get(Settings::class),
                     $c->get(View::class)
+                );
+            }
+        );
+
+        $container->singleton(
+            VmControlAjaxController::class,
+            static function (Container $c): VmControlAjaxController {
+                return new VmControlAjaxController(
+                    $c->get(VmService::class),
+                    $c->get(VmControlService::class),
+                    $c->get(Settings::class)
                 );
             }
         );
@@ -98,8 +128,12 @@ final class FrontendServiceProvider extends AbstractServiceProvider
         $dashboard = $container->get(Dashboard::class);
         $dashboard->register();
 
-        /** @var DashboardAjaxController $ajax */
-        $ajax = $container->get(DashboardAjaxController::class);
-        $ajax->register();
+        /** @var DashboardAjaxController $dashboardAjax */
+        $dashboardAjax = $container->get(DashboardAjaxController::class);
+        $dashboardAjax->register();
+
+        /** @var VmControlAjaxController $controlAjax */
+        $controlAjax = $container->get(VmControlAjaxController::class);
+        $controlAjax->register();
     }
 }

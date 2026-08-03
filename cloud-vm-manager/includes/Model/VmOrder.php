@@ -144,6 +144,17 @@ final class VmOrder extends AbstractModel
     }
 
     /**
+     * Backend customer identifier the machine belongs to.
+     *
+     * The control endpoints carry it in the path, although the backend resolves
+     * the account from the bearer token and ignores the value.
+     */
+    public function getRemoteUserId(): int
+    {
+        return $this->getInt('remote_user_id');
+    }
+
+    /**
      * Internal database identifier of the machine on the backend.
      */
     public function getRemoteVmId(): int

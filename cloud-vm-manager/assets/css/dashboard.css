@@ -320,6 +320,64 @@
     color: var(--cvm-accent);
 }
 
+.cvm-button-danger {
+    background: transparent;
+    border-color: var(--cvm-danger);
+    color: var(--cvm-danger);
+}
+
+.cvm-input {
+    background: var(--cvm-panel);
+    border: 1px solid var(--cvm-border);
+    border-radius: 8px;
+    color: var(--cvm-text);
+    font-size: .875rem;
+    padding: 7px 10px;
+}
+
+/* Controls */
+
+.cvm-control-group {
+    border-top: 1px solid var(--cvm-border);
+    padding-top: 14px;
+}
+
+.cvm-control-group:first-of-type {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.cvm-control-group h4 {
+    font-size: .875rem;
+    margin: 0 0 10px;
+}
+
+.cvm-control-row {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.cvm-control-feedback {
+    font-size: .875rem;
+    margin-top: 12px;
+    min-height: 1.25em;
+}
+
+.cvm-control-feedback.is-success {
+    color: var(--cvm-success);
+}
+
+.cvm-control-feedback.is-error {
+    color: var(--cvm-danger);
+}
+
+.cvm-control-feedback.is-busy {
+    color: var(--cvm-muted);
+}
+
 .cvm-select {
     background: var(--cvm-panel);
     border: 1px solid var(--cvm-border);

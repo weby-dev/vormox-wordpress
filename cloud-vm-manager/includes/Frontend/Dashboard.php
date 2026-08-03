@@ -14,6 +14,7 @@ use CloudVmManager\Admin\Access;
 use CloudVmManager\Admin\View;
 use CloudVmManager\Model\VmOrder;
 use CloudVmManager\Repository\LogRepository;
+use CloudVmManager\Service\Vm\VmControlService;
 use CloudVmManager\Service\Vm\VmMetricsService;
 use CloudVmManager\Service\Vm\VmService;
 use CloudVmManager\Service\Vm\WalletService;
@@ -48,6 +49,11 @@ final class Dashboard
     private $metrics;
 
     /**
+     * @var VmControlService
+     */
+    private $controls;
+
+    /**
      * @var WalletService
      */
     private $wallet;
@@ -75,6 +81,7 @@ final class Dashboard
     public function __construct(
         VmService $machines,
         VmMetricsService $metrics,
+        VmControlService $controls,
         WalletService $wallet,
         LogRepository $logs,
         Settings $settings,
@@ -82,6 +89,7 @@ final class Dashboard
     ) {
         $this->machines = $machines;
         $this->metrics = $metrics;
+        $this->controls = $controls;
         $this->wallet = $wallet;
         $this->logs = $logs;
         $this->settings = $settings;
@@ -206,13 +214,25 @@ final class Dashboard
         }
 
         $lock = $this->machines->lockStatus($machine);
+        $operable = !$lock['locked'] && $machine->isProvisioned() && !$machine->isTerminated();
+
+        $controls = $this->view->capture(
+            'frontend/partials/controls',
+            [
+                'machine' => $machine,
+                'operable' => $operable,
+                'rebuildOptions' => $operable ? $this->controls->rebuildOptions($machine) : [],
+                'powerActions' => VmControlService::POWER_ACTIONS,
+            ]
+        );
 
         return $this->view->capture(
             'frontend/machine',
             [
                 'machine' => $machine,
                 'lock' => $lock,
-                'operable' => !$lock['locked'] && $machine->isProvisioned(),
+                'operable' => $operable,
+                'controls' => $controls,
                 'metrics' => $this->metrics->metrics($machine),
                 'storage' => $this->metrics->storage($machine),
                 'timeframes' => $this->metrics->timeframes(),
@@ -249,9 +269,11 @@ final class Dashboard
                 'refreshInterval' => max(10, $this->settings->getInt('metrics_refresh_interval', 30)) * 1000,
                 'i18n' => [
                     'refreshing' => __('Refreshing…', 'cloud-vm-manager'),
+                    'working' => __('Working…', 'cloud-vm-manager'),
                     'updated' => __('Updated just now', 'cloud-vm-manager'),
-                    'failed' => __('Could not refresh the machine.', 'cloud-vm-manager'),
+                    'failed' => __('The request could not be completed.', 'cloud-vm-manager'),
                     'noData' => __('No data for this period yet.', 'cloud-vm-manager'),
+                    'passwordRequired' => __('Enter a new password first.', 'cloud-vm-manager'),
                 ],
             ]
         );

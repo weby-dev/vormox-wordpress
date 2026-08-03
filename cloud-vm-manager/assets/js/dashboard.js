@@ -262,6 +262,107 @@
             });
     }
 
+    /**
+     * Print a message into the control feedback area.
+     *
+     * @param {HTMLElement} root    Machine view root.
+     * @param {string}      message Message to display.
+     * @param {string}      state   One of busy, success or error.
+     */
+    function setControlFeedback(root, message, state) {
+        var feedback = root.querySelector('.cvm-control-feedback');
+
+        if (!feedback) {
+            return;
+        }
+
+        feedback.textContent = message || '';
+        feedback.className = 'cvm-control-feedback' + (state ? ' is-' + state : '');
+    }
+
+    /**
+     * Enable or disable every control of the machine view.
+     *
+     * @param {HTMLElement} root     Machine view root.
+     * @param {boolean}     disabled Whether the controls are disabled.
+     */
+    function setControlsBusy(root, disabled) {
+        root.querySelectorAll('.cvm-control').forEach(function (button) {
+            button.disabled = disabled;
+        });
+    }
+
+    /**
+     * Run a control action for the machine currently on screen.
+     *
+     * @param {HTMLElement} root   Machine view root.
+     * @param {HTMLElement} button Clicked control.
+     */
+    function runControl(root, button) {
+        var action = button.getAttribute('data-cvm-action');
+        var confirmation = button.getAttribute('data-cvm-confirm');
+
+        if (confirmation && !window.confirm(confirmation)) {
+            return;
+        }
+
+        var parameters = { machine_id: root.getAttribute('data-machine-id') };
+
+        if (action === 'cvm_vm_power') {
+            parameters.vm_action = button.getAttribute('data-cvm-power') || '';
+        }
+
+        if (action === 'cvm_vm_rebuild') {
+            var iso = document.getElementById('cvm-rebuild-iso');
+
+            parameters.iso_id = iso ? iso.value : '0';
+        }
+
+        if (action === 'cvm_vm_password') {
+            var password = document.getElementById('cvm-new-password');
+
+            parameters.password = password ? password.value : '';
+
+            if (!parameters.password) {
+                setControlFeedback(root, strings.passwordRequired || '', 'error');
+
+                return;
+            }
+        }
+
+        setControlsBusy(root, true);
+        setControlFeedback(root, strings.working || '', 'busy');
+
+        request(action, parameters)
+            .then(function (envelope) {
+                var data = envelope && envelope.data ? envelope.data : {};
+
+                if (envelope && envelope.success) {
+                    setControlFeedback(root, data.message || '', 'success');
+
+                    if (action === 'cvm_vm_password') {
+                        var field = document.getElementById('cvm-new-password');
+
+                        if (field) {
+                            field.value = '';
+                        }
+                    }
+
+                    refreshStatus(root);
+
+                    return;
+                }
+
+                setControlFeedback(root, data.message || strings.failed || '', 'error');
+            })
+            .catch(function () {
+                setControlFeedback(root, strings.failed || '', 'error');
+            })
+            .finally(function () {
+                setControlsBusy(root, false);
+            });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         var machineView = document.querySelector('.cvm-machine-view');
 
@@ -282,6 +383,13 @@
                 refreshMetrics(machineView);
             });
         }
+
+        machineView.querySelectorAll('.cvm-control').forEach(function (button) {
+            button.addEventListener('click', function (event) {
+                event.preventDefault();
+                runControl(machineView, button);
+            });
+        });
 
         var invoice = machineView.querySelector('[data-cvm-invoice]');
 

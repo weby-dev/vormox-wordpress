@@ -183,7 +183,7 @@ final class VmMetricsService
             return [
                 'available' => false,
                 'message' => __(
-                    'Live storage statistics are unavailable. Make sure the QEMU guest agent is running inside the machine.',
+                    'Live storage statistics are unavailable. Check that the QEMU guest agent is running.',
                     'cloud-vm-manager'
                 ),
                 'drives' => [],

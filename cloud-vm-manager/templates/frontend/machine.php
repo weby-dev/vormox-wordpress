@@ -8,6 +8,7 @@
  * @var \CloudVmManager\Model\VmOrder    $machine         Machine being shown.
  * @var array<string, mixed>             $lock            Lock state.
  * @var bool                             $operable        Whether controls apply.
+ * @var string                           $controls        Rendered control panel.
  * @var array<string, mixed>             $metrics         Live metrics.
  * @var array<string, mixed>             $storage         File system usage.
  * @var string[]                         $timeframes      Metric timeframes.
@@ -208,6 +209,15 @@ $cvm_renews = $machine->getDateTime('renews_at');
             </figure>
         </section>
     </div>
+
+    <?php
+    /*
+     * The control panel is rendered by the plugin from its own template, where
+     * every value is escaped at the point it is printed.
+     */
+    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    echo $controls;
+    ?>
 
     <div class="cvm-columns">
         <section class="cvm-panel">

@@ -1,0 +1,503 @@
+/*
+ * Cloud VM Manager — customer dashboard.
+ *
+ * Self contained so it sits on any theme, and driven by custom properties so
+ * the light and dark palettes live in one place.
+ */
+
+.cvm-dashboard {
+    --cvm-bg: #fff;
+    --cvm-panel: #fff;
+    --cvm-border: #e2e4e7;
+    --cvm-text: #1d2327;
+    --cvm-muted: #6b7280;
+    --cvm-accent: #2271b1;
+    --cvm-accent-soft: rgba(34, 113, 177, .1);
+    --cvm-success: #00844a;
+    --cvm-success-soft: #e6f6ed;
+    --cvm-warning: #9a6700;
+    --cvm-warning-soft: #fff8e5;
+    --cvm-danger: #b32d2e;
+    --cvm-danger-soft: #fdf0f0;
+    --cvm-radius: 12px;
+    --cvm-shadow: 0 1px 3px rgba(16, 24, 40, .08);
+    --cvm-cpu: #2271b1;
+    --cvm-memory: #7c3aed;
+
+    box-sizing: border-box;
+    color: var(--cvm-text);
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0 auto;
+    max-width: 1100px;
+}
+
+.cvm-dashboard *,
+.cvm-dashboard *::before,
+.cvm-dashboard *::after {
+    box-sizing: inherit;
+}
+
+@media (prefers-color-scheme: dark) {
+    .cvm-dashboard {
+        --cvm-bg: #16181d;
+        --cvm-panel: #1e2127;
+        --cvm-border: #2f333b;
+        --cvm-text: #e8eaed;
+        --cvm-muted: #9aa0a6;
+        --cvm-accent: #7cb3e8;
+        --cvm-accent-soft: rgba(124, 179, 232, .14);
+        --cvm-success: #6ee7a8;
+        --cvm-success-soft: #14301f;
+        --cvm-warning: #f0c674;
+        --cvm-warning-soft: #302716;
+        --cvm-danger: #f2a2a0;
+        --cvm-danger-soft: #331b1b;
+        --cvm-shadow: 0 1px 3px rgba(0, 0, 0, .5);
+        --cvm-cpu: #7cb3e8;
+        --cvm-memory: #b79cf5;
+    }
+}
+
+/* Header */
+
+.cvm-dashboard-header {
+    align-items: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.cvm-dashboard-title {
+    font-size: 1.5rem;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.cvm-back {
+    color: var(--cvm-muted);
+    display: inline-block;
+    font-size: .875rem;
+    margin-bottom: 6px;
+    text-decoration: none;
+}
+
+.cvm-back:hover,
+.cvm-back:focus {
+    color: var(--cvm-accent);
+}
+
+/* Stats */
+
+.cvm-stats {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    margin-bottom: 20px;
+}
+
+.cvm-stat {
+    background: var(--cvm-panel);
+    border: 1px solid var(--cvm-border);
+    border-radius: var(--cvm-radius);
+    box-shadow: var(--cvm-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px;
+}
+
+.cvm-stat-label {
+    color: var(--cvm-muted);
+    font-size: .8125rem;
+}
+
+.cvm-stat-value {
+    font-size: 1.5rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+/* Panels */
+
+.cvm-panel {
+    background: var(--cvm-panel);
+    border: 1px solid var(--cvm-border);
+    border-radius: var(--cvm-radius);
+    box-shadow: var(--cvm-shadow);
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.cvm-panel h3 {
+    font-size: 1rem;
+    margin: 0 0 12px;
+}
+
+.cvm-panel-head {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.cvm-panel-head h3 {
+    margin: 0;
+}
+
+.cvm-columns {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.cvm-empty {
+    text-align: center;
+}
+
+.cvm-muted {
+    color: var(--cvm-muted);
+}
+
+/* Machine cards */
+
+.cvm-machine-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    margin-bottom: 20px;
+}
+
+.cvm-machine-card {
+    background: var(--cvm-panel);
+    border: 1px solid var(--cvm-border);
+    border-radius: var(--cvm-radius);
+    box-shadow: var(--cvm-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px;
+}
+
+.cvm-machine-card-header {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+}
+
+.cvm-machine-card-header h3 {
+    font-size: 1.0625rem;
+    margin: 0;
+}
+
+.cvm-machine-card-header a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.cvm-machine-card-header a:hover,
+.cvm-machine-card-header a:focus {
+    color: var(--cvm-accent);
+}
+
+.cvm-machine-card-footer {
+    margin-top: auto;
+}
+
+/* Specifications */
+
+.cvm-specs {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+}
+
+.cvm-specs-wide {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.cvm-specs dt {
+    color: var(--cvm-muted);
+    font-size: .75rem;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+}
+
+.cvm-specs dd {
+    font-size: .9375rem;
+    margin: 2px 0 0;
+    overflow-wrap: anywhere;
+}
+
+/* Pills and notices */
+
+.cvm-pill {
+    background: var(--cvm-accent-soft);
+    border-radius: 999px;
+    color: var(--cvm-accent);
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    padding: 3px 10px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.cvm-pill-active,
+.cvm-pill-running {
+    background: var(--cvm-success-soft);
+    color: var(--cvm-success);
+}
+
+.cvm-pill-failed,
+.cvm-pill-terminated,
+.cvm-pill-stopped {
+    background: var(--cvm-danger-soft);
+    color: var(--cvm-danger);
+}
+
+.cvm-pill-provisioning,
+.cvm-pill-pending,
+.cvm-pill-suspended {
+    background: var(--cvm-warning-soft);
+    color: var(--cvm-warning);
+}
+
+.cvm-notice {
+    border-radius: 8px;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+}
+
+.cvm-notice-info {
+    background: var(--cvm-accent-soft);
+    color: var(--cvm-accent);
+}
+
+.cvm-notice-warning {
+    background: var(--cvm-warning-soft);
+    color: var(--cvm-warning);
+}
+
+.cvm-notice-error {
+    background: var(--cvm-danger-soft);
+    color: var(--cvm-danger);
+}
+
+/* Controls */
+
+.cvm-button {
+    background: var(--cvm-accent);
+    border: 1px solid var(--cvm-accent);
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    display: inline-block;
+    font-size: .875rem;
+    font-weight: 600;
+    padding: 8px 14px;
+    text-decoration: none;
+}
+
+.cvm-button:hover,
+.cvm-button:focus {
+    filter: brightness(1.08);
+    color: #fff;
+}
+
+.cvm-button[disabled] {
+    cursor: progress;
+    opacity: .6;
+}
+
+.cvm-button-secondary {
+    background: transparent;
+    color: var(--cvm-accent);
+}
+
+.cvm-select {
+    background: var(--cvm-panel);
+    border: 1px solid var(--cvm-border);
+    border-radius: 8px;
+    color: var(--cvm-text);
+    font-size: .875rem;
+    padding: 6px 10px;
+}
+
+/* Gauges and charts */
+
+.cvm-gauges {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.cvm-gauge {
+    align-items: center;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 70px 1fr 56px;
+}
+
+.cvm-gauge-label {
+    color: var(--cvm-muted);
+    font-size: .8125rem;
+}
+
+.cvm-gauge-value {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.cvm-progress {
+    background: var(--cvm-accent-soft);
+    border-radius: 999px;
+    height: 8px;
+    overflow: hidden;
+}
+
+.cvm-progress-bar {
+    background: var(--cvm-accent);
+    height: 100%;
+    transition: width .4s ease;
+}
+
+.cvm-chart {
+    margin: 0 0 18px;
+}
+
+.cvm-chart figcaption {
+    color: var(--cvm-muted);
+    font-size: .8125rem;
+    margin-bottom: 6px;
+}
+
+.cvm-chart svg {
+    display: block;
+    height: 160px;
+    width: 100%;
+}
+
+.cvm-legend {
+    display: flex;
+    gap: 14px;
+    margin-top: 6px;
+}
+
+.cvm-legend-item {
+    align-items: center;
+    color: var(--cvm-muted);
+    display: inline-flex;
+    font-size: .75rem;
+    gap: 6px;
+}
+
+.cvm-legend-item::before {
+    border-radius: 2px;
+    content: '';
+    height: 8px;
+    width: 14px;
+}
+
+.cvm-legend-cpu::before,
+.cvm-legend-in::before {
+    background: var(--cvm-cpu);
+}
+
+.cvm-legend-memory::before,
+.cvm-legend-out::before {
+    background: var(--cvm-memory);
+}
+
+/* Drives */
+
+.cvm-drive {
+    margin-bottom: 14px;
+}
+
+.cvm-drive-head {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.cvm-drive-foot {
+    font-size: .8125rem;
+    margin-top: 6px;
+}
+
+/* Timeline */
+
+.cvm-timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.cvm-timeline li {
+    border-bottom: 1px solid var(--cvm-border);
+    display: grid;
+    gap: 2px;
+    padding: 10px 0;
+}
+
+.cvm-timeline li:last-child {
+    border-bottom: 0;
+}
+
+.cvm-timeline-time {
+    color: var(--cvm-muted);
+    font-size: .75rem;
+}
+
+.cvm-timeline-amount {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.cvm-timeline-amount.is-credit {
+    color: var(--cvm-success);
+}
+
+.cvm-timeline-amount.is-debit {
+    color: var(--cvm-danger);
+}
+
+/* Pagination */
+
+.cvm-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 20px;
+}
+
+.cvm-page {
+    border: 1px solid var(--cvm-border);
+    border-radius: 6px;
+    color: inherit;
+    padding: 4px 10px;
+    text-decoration: none;
+}
+
+.cvm-page.is-current {
+    background: var(--cvm-accent);
+    border-color: var(--cvm-accent);
+    color: #fff;
+}
+
+@media screen and (max-width: 600px) {
+    .cvm-specs {
+        grid-template-columns: 1fr;
+    }
+
+    .cvm-gauge {
+        grid-template-columns: 60px 1fr 48px;
+    }
+}

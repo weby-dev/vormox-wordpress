@@ -17,6 +17,7 @@ use CloudVmManager\ServiceProvider\AdminServiceProvider;
 use CloudVmManager\ServiceProvider\CoreServiceProvider;
 use CloudVmManager\ServiceProvider\CronServiceProvider;
 use CloudVmManager\ServiceProvider\DatabaseServiceProvider;
+use CloudVmManager\ServiceProvider\FrontendServiceProvider;
 use CloudVmManager\ServiceProvider\HttpServiceProvider;
 use CloudVmManager\ServiceProvider\ProvisioningServiceProvider;
 use CloudVmManager\ServiceProvider\SyncServiceProvider;
@@ -180,6 +181,7 @@ final class Plugin
             AdminServiceProvider::class,
             WooCommerceServiceProvider::class,
             ProvisioningServiceProvider::class,
+            FrontendServiceProvider::class,
         ];
 
         /**

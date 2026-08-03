@@ -13,9 +13,11 @@ namespace CloudVmManager;
 use CloudVmManager\Container\Container;
 use CloudVmManager\Container\ServiceProviderInterface;
 use CloudVmManager\Database\Migrator;
+use CloudVmManager\ServiceProvider\AdminServiceProvider;
 use CloudVmManager\ServiceProvider\CoreServiceProvider;
 use CloudVmManager\ServiceProvider\CronServiceProvider;
 use CloudVmManager\ServiceProvider\DatabaseServiceProvider;
+use CloudVmManager\ServiceProvider\HttpServiceProvider;
 use wpdb;
 
 defined('ABSPATH') || exit;
@@ -169,7 +171,9 @@ final class Plugin
         $providers = [
             CoreServiceProvider::class,
             DatabaseServiceProvider::class,
+            HttpServiceProvider::class,
             CronServiceProvider::class,
+            AdminServiceProvider::class,
         ];
 
         /**

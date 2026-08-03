@@ -1,0 +1,247 @@
+/*
+ * Cloud VM Manager — admin styles.
+ *
+ * Uses custom properties so the light and dark palettes stay in one place, and
+ * follows the WordPress admin colour scheme where it exists.
+ */
+
+.cvm-wrap {
+    --cvm-surface: #fff;
+    --cvm-surface-alt: #f6f7f7;
+    --cvm-border: #dcdcde;
+    --cvm-text: #1d2327;
+    --cvm-muted: #646970;
+    --cvm-accent: #2271b1;
+    --cvm-success-bg: #edfaef;
+    --cvm-success-text: #00650f;
+    --cvm-success-border: #a7e3b0;
+    --cvm-error-bg: #fcf0f1;
+    --cvm-error-text: #8a1f11;
+    --cvm-error-border: #f0b5b0;
+    --cvm-neutral-bg: #f0f0f1;
+    --cvm-neutral-text: #50575e;
+    --cvm-neutral-border: #dcdcde;
+    --cvm-radius: 8px;
+    --cvm-shadow: 0 1px 2px rgba(0, 0, 0, .06);
+
+    max-width: 1200px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .cvm-wrap {
+        --cvm-surface: #1e1e1e;
+        --cvm-surface-alt: #2c2c2c;
+        --cvm-border: #3c434a;
+        --cvm-text: #e6e6e6;
+        --cvm-muted: #a7aaad;
+        --cvm-accent: #72aee6;
+        --cvm-success-bg: #17301b;
+        --cvm-success-text: #7fdc92;
+        --cvm-success-border: #2e5c37;
+        --cvm-error-bg: #351a19;
+        --cvm-error-text: #f0a49c;
+        --cvm-error-border: #6b2f2a;
+        --cvm-neutral-bg: #2c2c2c;
+        --cvm-neutral-text: #c3c4c7;
+        --cvm-neutral-border: #3c434a;
+        --cvm-shadow: 0 1px 2px rgba(0, 0, 0, .4);
+    }
+}
+
+/* Page header */
+
+.cvm-page-header {
+    align-items: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: space-between;
+    margin: 8px 0 20px;
+}
+
+.cvm-page-header h1.wp-heading-inline {
+    margin: 0;
+    padding: 0;
+}
+
+.cvm-page-subtitle {
+    color: var(--cvm-muted);
+    margin: 6px 0 0;
+    max-width: 70ch;
+}
+
+.cvm-page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Cards */
+
+.cvm-card {
+    background: var(--cvm-surface);
+    border: 1px solid var(--cvm-border);
+    border-radius: var(--cvm-radius);
+    box-shadow: var(--cvm-shadow);
+    color: var(--cvm-text);
+    margin-bottom: 20px;
+    padding: 20px 24px;
+}
+
+.cvm-card-title {
+    border-bottom: 1px solid var(--cvm-border);
+    font-size: 15px;
+    margin: 0 0 4px;
+    padding-bottom: 12px;
+}
+
+.cvm-card-subtitle {
+    color: var(--cvm-muted);
+    margin: 8px 0 0;
+    max-width: 70ch;
+}
+
+.cvm-card .form-table th {
+    padding-left: 0;
+    width: 220px;
+}
+
+.cvm-empty-state {
+    padding: 48px 24px;
+    text-align: center;
+}
+
+.cvm-empty-state h2 {
+    margin-top: 0;
+}
+
+.cvm-empty-state p {
+    color: var(--cvm-muted);
+    margin: 0 auto 20px;
+    max-width: 52ch;
+}
+
+/* Table */
+
+.cvm-card .cvm-table {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.cvm-table td {
+    vertical-align: top;
+}
+
+.cvm-col-actions {
+    width: 380px;
+}
+
+.cvm-code {
+    background: var(--cvm-surface-alt);
+    border-radius: 4px;
+    display: inline-block;
+    font-size: 12px;
+    padding: 2px 6px;
+    word-break: break-all;
+}
+
+.cvm-muted {
+    color: var(--cvm-muted);
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.cvm-error-text {
+    color: var(--cvm-error-text);
+}
+
+.cvm-warning-text {
+    color: #b26200;
+}
+
+/* Badges */
+
+.cvm-badge {
+    border: 1px solid var(--cvm-neutral-border);
+    background: var(--cvm-neutral-bg);
+    border-radius: 999px;
+    color: var(--cvm-neutral-text);
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    line-height: 1.6;
+    padding: 1px 10px;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.cvm-status-connected {
+    background: var(--cvm-success-bg);
+    border-color: var(--cvm-success-border);
+    color: var(--cvm-success-text);
+}
+
+.cvm-status-error {
+    background: var(--cvm-error-bg);
+    border-color: var(--cvm-error-border);
+    color: var(--cvm-error-text);
+}
+
+.cvm-badge-default {
+    background: rgba(34, 113, 177, .12);
+    border-color: rgba(34, 113, 177, .35);
+    color: var(--cvm-accent);
+}
+
+/* Actions */
+
+.cvm-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.cvm-action[disabled] {
+    cursor: progress;
+    opacity: .6;
+}
+
+.cvm-action-feedback {
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.cvm-action-feedback.is-success {
+    color: var(--cvm-success-text);
+}
+
+.cvm-action-feedback.is-error {
+    color: var(--cvm-error-text);
+}
+
+.cvm-action-feedback.is-busy {
+    color: var(--cvm-muted);
+}
+
+.cvm-suffix {
+    color: var(--cvm-muted);
+    margin-left: 6px;
+}
+
+/* Responsive */
+
+@media screen and (max-width: 782px) {
+    .cvm-col-actions {
+        width: auto;
+    }
+
+    .cvm-card {
+        padding: 16px;
+    }
+
+    .cvm-card .form-table th {
+        width: auto;
+    }
+}

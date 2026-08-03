@@ -73,6 +73,7 @@ final class Assets
                     'connecting' => __('Connecting…', 'cloud-vm-manager'),
                     'disconnecting' => __('Disconnecting…', 'cloud-vm-manager'),
                     'refreshing' => __('Refreshing token…', 'cloud-vm-manager'),
+                    'syncing' => __('Synchronising catalogue…', 'cloud-vm-manager'),
                     'unexpectedError' => __('The request could not be completed.', 'cloud-vm-manager'),
                     'confirmDisconnect' => __(
                         'Disconnect this provider? Stored tokens will be removed.',

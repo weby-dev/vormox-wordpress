@@ -30,7 +30,7 @@ final class BandwidthPlanRepository extends AbstractPlanRepository
         return BandwidthPlan::class;
     }
 
-    protected function specColumn(): string
+    public function specColumn(): string
     {
         return 'bandwidth_gb';
     }

@@ -30,7 +30,7 @@ final class DiskPlanRepository extends AbstractPlanRepository
         return DiskPlan::class;
     }
 
-    protected function specColumn(): string
+    public function specColumn(): string
     {
         return 'disk_gb';
     }

@@ -16,8 +16,10 @@ use CloudVmManager\Contracts\JobInterface;
 use CloudVmManager\Contracts\LoggerInterface;
 use CloudVmManager\Cron\CronManager;
 use CloudVmManager\Cron\MaintenanceJob;
+use CloudVmManager\Cron\SyncJob;
 use CloudVmManager\Repository\LogRepository;
 use CloudVmManager\Repository\SyncRunRepository;
+use CloudVmManager\Service\Sync\CatalogueSynchronizer;
 use CloudVmManager\Support\Cache;
 use CloudVmManager\Support\Settings;
 
@@ -37,6 +39,17 @@ final class CronServiceProvider extends AbstractServiceProvider
                     $c->get(Cache::class),
                     $c->get(LogRepository::class),
                     $c->get(SyncRunRepository::class),
+                    $c->get(Settings::class),
+                    $c->get(LoggerInterface::class)
+                );
+            }
+        );
+
+        $container->singleton(
+            SyncJob::class,
+            static function (Container $c): SyncJob {
+                return new SyncJob(
+                    $c->get(CatalogueSynchronizer::class),
                     $c->get(Settings::class),
                     $c->get(LoggerInterface::class)
                 );
@@ -83,7 +96,7 @@ final class CronServiceProvider extends AbstractServiceProvider
      */
     private static function jobClasses(): array
     {
-        $jobs = [MaintenanceJob::class];
+        $jobs = [MaintenanceJob::class, SyncJob::class];
 
         /**
          * Filter the registered cron jobs.

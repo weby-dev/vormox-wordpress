@@ -137,6 +137,11 @@
     width: 380px;
 }
 
+.cvm-col-count {
+    text-align: right;
+    width: 90px;
+}
+
 .cvm-code {
     background: var(--cvm-surface-alt);
     border-radius: 4px;

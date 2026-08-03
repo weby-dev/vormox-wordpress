@@ -155,6 +155,33 @@ final class Arr
     }
 
     /**
+     * Sort an array by key, recursively.
+     *
+     * Used to make a checksum independent of the key order the backend happens
+     * to serialise a payload in.
+     *
+     * @param array<mixed> $array
+     *
+     * @return array<mixed>
+     */
+    public static function sortRecursive(array $array): array
+    {
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $array[$key] = self::sortRecursive($value);
+            }
+        }
+
+        if (self::isList($array)) {
+            return $array;
+        }
+
+        ksort($array);
+
+        return $array;
+    }
+
+    /**
      * Convert an integer list, dropping anything that is not numeric.
      *
      * @param array<int, mixed> $values

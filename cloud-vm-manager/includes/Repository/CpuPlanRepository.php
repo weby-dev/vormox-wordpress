@@ -30,7 +30,7 @@ final class CpuPlanRepository extends AbstractPlanRepository
         return CpuPlan::class;
     }
 
-    protected function specColumn(): string
+    public function specColumn(): string
     {
         return 'cores';
     }

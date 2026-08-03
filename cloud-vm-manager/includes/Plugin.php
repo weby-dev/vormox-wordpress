@@ -18,6 +18,7 @@ use CloudVmManager\ServiceProvider\CoreServiceProvider;
 use CloudVmManager\ServiceProvider\CronServiceProvider;
 use CloudVmManager\ServiceProvider\DatabaseServiceProvider;
 use CloudVmManager\ServiceProvider\HttpServiceProvider;
+use CloudVmManager\ServiceProvider\SyncServiceProvider;
 use wpdb;
 
 defined('ABSPATH') || exit;
@@ -172,6 +173,7 @@ final class Plugin
             CoreServiceProvider::class,
             DatabaseServiceProvider::class,
             HttpServiceProvider::class,
+            SyncServiceProvider::class,
             CronServiceProvider::class,
             AdminServiceProvider::class,
         ];

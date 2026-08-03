@@ -13,18 +13,29 @@ namespace CloudVmManager\ServiceProvider;
 use CloudVmManager\Admin\Assets;
 use CloudVmManager\Admin\Controller\ProvidersController;
 use CloudVmManager\Admin\Controller\SettingsController;
+use CloudVmManager\Admin\Controller\SyncController;
 use CloudVmManager\Admin\Menu;
 use CloudVmManager\Admin\Notices;
 use CloudVmManager\Admin\SettingsFields;
 use CloudVmManager\Admin\View;
 use CloudVmManager\Ajax\ProviderAjaxController;
+use CloudVmManager\Ajax\SyncAjaxController;
 use CloudVmManager\Bootstrap\Requirements;
 use CloudVmManager\Container\AbstractServiceProvider;
 use CloudVmManager\Container\Container;
 use CloudVmManager\Cron\CronManager;
+use CloudVmManager\Repository\BandwidthPlanRepository;
+use CloudVmManager\Repository\CpuPlanRepository;
+use CloudVmManager\Repository\DiskPlanRepository;
+use CloudVmManager\Repository\IsoTemplateRepository;
+use CloudVmManager\Repository\PricingRepository;
+use CloudVmManager\Repository\RamPlanRepository;
+use CloudVmManager\Repository\SyncRunRepository;
+use CloudVmManager\Repository\ZoneRepository;
 use CloudVmManager\Service\Provider\ConnectionTester;
 use CloudVmManager\Service\Provider\ProviderAuthenticator;
 use CloudVmManager\Service\Provider\ProviderService;
+use CloudVmManager\Service\Sync\CatalogueSynchronizer;
 use CloudVmManager\Support\Settings;
 
 defined('ABSPATH') || exit;
@@ -92,10 +103,30 @@ final class AdminServiceProvider extends AbstractServiceProvider
         );
 
         $container->singleton(
+            SyncController::class,
+            static function (Container $c): SyncController {
+                return new SyncController(
+                    $c->get(ProviderService::class),
+                    $c->get(ZoneRepository::class),
+                    $c->get(IsoTemplateRepository::class),
+                    $c->get(CpuPlanRepository::class),
+                    $c->get(RamPlanRepository::class),
+                    $c->get(DiskPlanRepository::class),
+                    $c->get(BandwidthPlanRepository::class),
+                    $c->get(PricingRepository::class),
+                    $c->get(SyncRunRepository::class),
+                    $c->get(CronManager::class),
+                    $c->get(View::class)
+                );
+            }
+        );
+
+        $container->singleton(
             Menu::class,
             static function (Container $c): Menu {
                 return new Menu(
                     $c->get(ProvidersController::class),
+                    $c->get(SyncController::class),
                     $c->get(SettingsController::class),
                     $c->get(Assets::class)
                 );
@@ -109,6 +140,16 @@ final class AdminServiceProvider extends AbstractServiceProvider
                     $c->get(ProviderService::class),
                     $c->get(ConnectionTester::class),
                     $c->get(ProviderAuthenticator::class)
+                );
+            }
+        );
+
+        $container->singleton(
+            SyncAjaxController::class,
+            static function (Container $c): SyncAjaxController {
+                return new SyncAjaxController(
+                    $c->get(ProviderService::class),
+                    $c->get(CatalogueSynchronizer::class)
                 );
             }
         );
@@ -141,9 +182,13 @@ final class AdminServiceProvider extends AbstractServiceProvider
         $settings = $container->get(SettingsController::class);
         add_action('admin_post_' . SettingsController::ACTION_SAVE, [$settings, 'handleSave']);
 
-        /** @var ProviderAjaxController $ajax */
-        $ajax = $container->get(ProviderAjaxController::class);
-        $ajax->register();
+        /** @var ProviderAjaxController $providerAjax */
+        $providerAjax = $container->get(ProviderAjaxController::class);
+        $providerAjax->register();
+
+        /** @var SyncAjaxController $syncAjax */
+        $syncAjax = $container->get(SyncAjaxController::class);
+        $syncAjax->register();
 
         $this->registerWooCommerceNotice();
     }

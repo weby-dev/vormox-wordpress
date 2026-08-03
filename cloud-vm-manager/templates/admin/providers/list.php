@@ -126,6 +126,9 @@ $cvm_status_labels = [
                                     <?php esc_html_e('Test', 'cloud-vm-manager'); ?>
                                 </button>
                                 <?php if ($cvm_provider->isConnected()) : ?>
+                                    <button type="button" class="button cvm-action" data-action="cvm_sync_provider">
+                                        <?php esc_html_e('Sync', 'cloud-vm-manager'); ?>
+                                    </button>
                                     <button type="button" class="button cvm-action" data-action="cvm_refresh_token">
                                         <?php esc_html_e('Refresh token', 'cloud-vm-manager'); ?>
                                     </button>

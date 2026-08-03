@@ -22,7 +22,7 @@ abstract class AbstractPlanRepository extends AbstractRepository
     /**
      * Resource specific column of the table, for example "cores".
      */
-    abstract protected function specColumn(): string;
+    abstract public function specColumn(): string;
 
     /**
      * @return array<string, string>

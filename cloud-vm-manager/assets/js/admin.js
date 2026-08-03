@@ -10,6 +10,9 @@
     var settings = window.cvmAdmin || {};
     var strings = settings.i18n || {};
 
+    /* Actions whose result changes the row markup, so the page is reloaded. */
+    var RELOADING_ACTIONS = ['cvm_connect_provider', 'cvm_disconnect_provider', 'cvm_refresh_token'];
+
     /**
      * Post an action to admin-ajax.php.
      *
@@ -57,6 +60,8 @@
                 return strings.disconnecting || strings.working;
             case 'cvm_refresh_token':
                 return strings.refreshing || strings.working;
+            case 'cvm_sync_provider':
+                return strings.syncing || strings.working;
             default:
                 return strings.working || '';
         }
@@ -142,7 +147,7 @@
                 if (envelope && envelope.success) {
                     setFeedback(row, data.message || (data.result && data.result.message) || '', 'success');
 
-                    if (action !== 'cvm_test_connection') {
+                    if (RELOADING_ACTIONS.indexOf(action) !== -1) {
                         window.location.reload();
                     }
 

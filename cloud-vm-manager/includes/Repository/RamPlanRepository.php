@@ -30,7 +30,7 @@ final class RamPlanRepository extends AbstractPlanRepository
         return RamPlan::class;
     }
 
-    protected function specColumn(): string
+    public function specColumn(): string
     {
         return 'ram_mb';
     }

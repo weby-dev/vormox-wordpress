@@ -301,6 +301,14 @@ final class VmOrder extends AbstractModel
         return $this->getFloat('provider_amount');
     }
 
+    /**
+     * Coupon code forwarded to the backend when the machine was created.
+     */
+    public function getCouponCode(): string
+    {
+        return $this->getString('coupon_code');
+    }
+
     public function getErrorMessage(): string
     {
         return $this->getString('error_message');

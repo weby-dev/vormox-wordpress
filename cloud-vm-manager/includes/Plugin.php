@@ -18,7 +18,9 @@ use CloudVmManager\ServiceProvider\CoreServiceProvider;
 use CloudVmManager\ServiceProvider\CronServiceProvider;
 use CloudVmManager\ServiceProvider\DatabaseServiceProvider;
 use CloudVmManager\ServiceProvider\HttpServiceProvider;
+use CloudVmManager\ServiceProvider\ProvisioningServiceProvider;
 use CloudVmManager\ServiceProvider\SyncServiceProvider;
+use CloudVmManager\ServiceProvider\WooCommerceServiceProvider;
 use wpdb;
 
 defined('ABSPATH') || exit;
@@ -176,6 +178,8 @@ final class Plugin
             SyncServiceProvider::class,
             CronServiceProvider::class,
             AdminServiceProvider::class,
+            WooCommerceServiceProvider::class,
+            ProvisioningServiceProvider::class,
         ];
 
         /**

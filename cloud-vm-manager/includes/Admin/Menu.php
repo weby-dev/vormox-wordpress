@@ -13,6 +13,7 @@ namespace CloudVmManager\Admin;
 use CloudVmManager\Admin\Controller\ProvidersController;
 use CloudVmManager\Admin\Controller\SettingsController;
 use CloudVmManager\Admin\Controller\SyncController;
+use CloudVmManager\Admin\Controller\VmOrdersController;
 
 defined('ABSPATH') || exit;
 
@@ -33,6 +34,11 @@ final class Menu
     private $providers;
 
     /**
+     * @var VmOrdersController
+     */
+    private $vmOrders;
+
+    /**
      * @var SyncController
      */
     private $sync;
@@ -49,11 +55,13 @@ final class Menu
 
     public function __construct(
         ProvidersController $providers,
+        VmOrdersController $vmOrders,
         SyncController $sync,
         SettingsController $settings,
         Assets $assets
     ) {
         $this->providers = $providers;
+        $this->vmOrders = $vmOrders;
         $this->sync = $sync;
         $this->settings = $settings;
         $this->assets = $assets;
@@ -84,6 +92,15 @@ final class Menu
             $capability,
             ProvidersController::PAGE,
             [$this->providers, 'render']
+        );
+
+        $hooks[] = add_submenu_page(
+            ProvidersController::PAGE,
+            __('Virtual Machines', 'cloud-vm-manager'),
+            __('Virtual Machines', 'cloud-vm-manager'),
+            $capability,
+            VmOrdersController::PAGE,
+            [$this->vmOrders, 'render']
         );
 
         $hooks[] = add_submenu_page(

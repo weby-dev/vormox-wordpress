@@ -50,6 +50,8 @@ final class Settings
             'auto_sync_enabled' => [true, 'bool'],
             'provisioning_retry_limit' => [5, 'int'],
             'provisioning_retry_delay' => [300, 'int'],
+            'provisioning_gateway' => ['CASHFREE', 'gateway'],
+            'use_wallet_balance' => [true, 'bool'],
             'default_markup_type' => ['percent', 'markup_type'],
             'default_markup_value' => [0.0, 'float'],
             'dashboard_page_id' => [0, 'int'],
@@ -226,6 +228,10 @@ final class Settings
                 return $schedule !== '' ? $schedule : (string) $default;
             case 'markup_type':
                 return in_array($value, ['percent', 'fixed'], true) ? (string) $value : (string) $default;
+            case 'gateway':
+                $gateway = is_scalar($value) ? strtoupper(preg_replace('/[^A-Za-z0-9_\-]/', '', (string) $value)) : '';
+
+                return $gateway !== '' ? $gateway : (string) $default;
             default:
                 return is_scalar($value) ? sanitize_text_field((string) $value) : $default;
         }

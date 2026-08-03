@@ -145,6 +145,21 @@ final class SettingsFields
                         'min' => 30,
                         'max' => 3600,
                     ],
+                    [
+                        'key' => 'provisioning_gateway',
+                        'label' => __('Payment gateway', 'cloud-vm-manager'),
+                        'type' => self::TYPE_TEXT,
+                        'description' => __(
+                            'Gateway named on the creation request. The backend rejects a request without one.',
+                            'cloud-vm-manager'
+                        ),
+                    ],
+                    [
+                        'key' => 'use_wallet_balance',
+                        'label' => __('Wallet', 'cloud-vm-manager'),
+                        'type' => self::TYPE_CHECKBOX,
+                        'checkbox_label' => __('Settle machines from the provider wallet balance', 'cloud-vm-manager'),
+                    ],
                 ],
             ],
             [

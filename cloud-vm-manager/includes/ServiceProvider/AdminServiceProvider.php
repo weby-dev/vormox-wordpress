@@ -14,6 +14,7 @@ use CloudVmManager\Admin\Assets;
 use CloudVmManager\Admin\Controller\ProvidersController;
 use CloudVmManager\Admin\Controller\SettingsController;
 use CloudVmManager\Admin\Controller\SyncController;
+use CloudVmManager\Admin\Controller\VmOrdersController;
 use CloudVmManager\Admin\Menu;
 use CloudVmManager\Admin\Notices;
 use CloudVmManager\Admin\SettingsFields;
@@ -29,8 +30,10 @@ use CloudVmManager\Repository\CpuPlanRepository;
 use CloudVmManager\Repository\DiskPlanRepository;
 use CloudVmManager\Repository\IsoTemplateRepository;
 use CloudVmManager\Repository\PricingRepository;
+use CloudVmManager\Repository\ProviderRepository;
 use CloudVmManager\Repository\RamPlanRepository;
 use CloudVmManager\Repository\SyncRunRepository;
+use CloudVmManager\Repository\VmOrderRepository;
 use CloudVmManager\Repository\ZoneRepository;
 use CloudVmManager\Service\Provider\ConnectionTester;
 use CloudVmManager\Service\Provider\ProviderAuthenticator;
@@ -122,10 +125,22 @@ final class AdminServiceProvider extends AbstractServiceProvider
         );
 
         $container->singleton(
+            VmOrdersController::class,
+            static function (Container $c): VmOrdersController {
+                return new VmOrdersController(
+                    $c->get(VmOrderRepository::class),
+                    $c->get(ProviderRepository::class),
+                    $c->get(View::class)
+                );
+            }
+        );
+
+        $container->singleton(
             Menu::class,
             static function (Container $c): Menu {
                 return new Menu(
                     $c->get(ProvidersController::class),
+                    $c->get(VmOrdersController::class),
                     $c->get(SyncController::class),
                     $c->get(SettingsController::class),
                     $c->get(Assets::class)

@@ -363,6 +363,220 @@
             });
     }
 
+    /**
+     * Read the upgrade selections currently on screen.
+     *
+     * @param {HTMLElement} panel Upgrade panel.
+     * @param {string}      machineId Machine identifier.
+     *
+     * @return {Object} Request parameters.
+     */
+    function upgradeParameters(panel, machineId) {
+        var parameters = { machine_id: machineId };
+
+        panel.querySelectorAll('.cvm-upgrade-select').forEach(function (element) {
+            parameters[element.getAttribute('data-resource') + '_price_id'] = element.value;
+        });
+
+        var months = document.getElementById('cvm-upgrade-months');
+        var coupon = document.getElementById('cvm-upgrade-coupon');
+
+        parameters.months_to_add = months ? months.value : '0';
+        parameters.coupon_code = coupon ? coupon.value : '';
+
+        return parameters;
+    }
+
+    /**
+     * Fill the tier selectors with the options the backend offers.
+     *
+     * @param {HTMLElement} panel Upgrade panel.
+     * @param {Object}      data  Options payload.
+     */
+    function fillUpgradeOptions(panel, data) {
+        panel.querySelectorAll('.cvm-upgrade-select').forEach(function (element) {
+            var resource = element.getAttribute('data-resource');
+            var options = (data.options || {})[resource] || [];
+            var current = (data.current || {})[resource];
+
+            element.innerHTML = '';
+
+            options.forEach(function (option) {
+                var node = document.createElement('option');
+
+                node.value = String(option.price_id);
+                node.textContent = option.pro_rata_cost > 0
+                    ? option.label + ' (+' + option.pro_rata_cost.toFixed(2) + ')'
+                    : option.label;
+
+                if (option.current || Number(option.price_id) === Number(current)) {
+                    node.selected = true;
+                }
+
+                element.appendChild(node);
+            });
+
+            if (options.length === 0) {
+                var empty = document.createElement('option');
+
+                empty.value = '0';
+                empty.textContent = strings.noUpgrades || '';
+                element.appendChild(empty);
+            }
+
+            element.disabled = options.length === 0;
+        });
+    }
+
+    /**
+     * Print a quote into the summary block.
+     *
+     * @param {HTMLElement} panel Upgrade panel.
+     * @param {Object}      quote Quote payload.
+     */
+    function showQuote(panel, quote) {
+        var summary = panel.querySelector('[data-cvm-quote]');
+
+        if (!summary) {
+            return;
+        }
+
+        summary.hidden = false;
+
+        ['original_amount', 'discount_amount', 'payable_amount'].forEach(function (key) {
+            var target = summary.querySelector('[data-cvm-quote-field="' + key + '"]');
+
+            if (target) {
+                target.textContent = Number(quote[key] || 0).toFixed(2);
+            }
+        });
+
+        var coupon = summary.querySelector('[data-cvm-quote-field="coupon_status"]');
+
+        if (coupon) {
+            coupon.textContent = quote.coupon_status || '—';
+        }
+    }
+
+    /**
+     * Print a message into the upgrade feedback area.
+     *
+     * @param {HTMLElement} panel   Upgrade panel.
+     * @param {string}      message Message to display.
+     * @param {string}      state   One of busy, success or error.
+     */
+    function setUpgradeFeedback(panel, message, state) {
+        var feedback = panel.querySelector('.cvm-upgrade-feedback');
+
+        if (feedback) {
+            feedback.textContent = message || '';
+            feedback.className = 'cvm-upgrade-feedback' + (state ? ' is-' + state : '');
+        }
+    }
+
+    /**
+     * Wire the upgrade panel of the machine view.
+     *
+     * @param {HTMLElement} root Machine view root.
+     */
+    function initUpgrade(root) {
+        var panel = root.querySelector('[data-cvm-upgrade]');
+
+        if (!panel || !panel.querySelector('.cvm-upgrade-select')) {
+            return;
+        }
+
+        var machineId = root.getAttribute('data-machine-id');
+        var applyButton = panel.querySelector('[data-cvm-apply-button]');
+        var quoteButton = panel.querySelector('[data-cvm-quote-button]');
+
+        request('cvm_upgrade_options', { machine_id: machineId })
+            .then(function (envelope) {
+                if (envelope && envelope.success) {
+                    fillUpgradeOptions(panel, envelope.data);
+
+                    return;
+                }
+
+                setUpgradeFeedback(panel, (envelope.data || {}).message || '', 'error');
+            })
+            .catch(function () {
+                setUpgradeFeedback(panel, strings.failed || '', 'error');
+            });
+
+        /* A changed selection invalidates the quote the customer confirmed. */
+        panel.addEventListener('change', function () {
+            if (applyButton) {
+                applyButton.disabled = true;
+            }
+
+            var summary = panel.querySelector('[data-cvm-quote]');
+
+            if (summary) {
+                summary.hidden = true;
+            }
+        });
+
+        if (quoteButton) {
+            quoteButton.addEventListener('click', function () {
+                setUpgradeFeedback(panel, strings.working || '', 'busy');
+
+                request('cvm_upgrade_quote', upgradeParameters(panel, machineId))
+                    .then(function (envelope) {
+                        var data = envelope && envelope.data ? envelope.data : {};
+
+                        if (envelope && envelope.success && data.quote) {
+                            showQuote(panel, data.quote);
+                            setUpgradeFeedback(panel, '', '');
+
+                            if (applyButton) {
+                                applyButton.disabled = false;
+                            }
+
+                            return;
+                        }
+
+                        setUpgradeFeedback(panel, data.message || strings.failed || '', 'error');
+                    })
+                    .catch(function () {
+                        setUpgradeFeedback(panel, strings.failed || '', 'error');
+                    });
+            });
+        }
+
+        if (applyButton) {
+            applyButton.addEventListener('click', function () {
+                if (!window.confirm(strings.confirmUpgrade || '')) {
+                    return;
+                }
+
+                applyButton.disabled = true;
+                setUpgradeFeedback(panel, strings.working || '', 'busy');
+
+                request('cvm_upgrade_apply', upgradeParameters(panel, machineId))
+                    .then(function (envelope) {
+                        var data = envelope && envelope.data ? envelope.data : {};
+
+                        if (envelope && envelope.success) {
+                            setUpgradeFeedback(panel, data.message || '', 'success');
+                            window.setTimeout(function () {
+                                window.location.reload();
+                            }, 1500);
+
+                            return;
+                        }
+
+                        setUpgradeFeedback(panel, data.message || strings.failed || '', 'error');
+                        applyButton.disabled = false;
+                    })
+                    .catch(function () {
+                        setUpgradeFeedback(panel, strings.failed || '', 'error');
+                        applyButton.disabled = false;
+                    });
+            });
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         var machineView = document.querySelector('.cvm-machine-view');
 
@@ -383,6 +597,8 @@
                 refreshMetrics(machineView);
             });
         }
+
+        initUpgrade(machineView);
 
         machineView.querySelectorAll('.cvm-control').forEach(function (button) {
             button.addEventListener('click', function (event) {

@@ -9,6 +9,7 @@
  * @var array<string, mixed>             $lock            Lock state.
  * @var bool                             $operable        Whether controls apply.
  * @var string                           $controls        Rendered control panel.
+ * @var string                           $upgrade         Rendered upgrade panel.
  * @var array<string, mixed>             $metrics         Live metrics.
  * @var array<string, mixed>             $storage         File system usage.
  * @var string[]                         $timeframes      Metric timeframes.
@@ -217,6 +218,8 @@ $cvm_renews = $machine->getDateTime('renews_at');
      */
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     echo $controls;
+    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    echo $upgrade;
     ?>
 
     <div class="cvm-columns">

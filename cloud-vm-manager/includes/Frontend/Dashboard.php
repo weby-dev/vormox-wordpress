@@ -12,6 +12,7 @@ namespace CloudVmManager\Frontend;
 
 use CloudVmManager\Admin\Access;
 use CloudVmManager\Admin\View;
+use CloudVmManager\Model\PricingRule;
 use CloudVmManager\Model\VmOrder;
 use CloudVmManager\Repository\LogRepository;
 use CloudVmManager\Service\Vm\VmControlService;
@@ -226,6 +227,20 @@ final class Dashboard
             ]
         );
 
+        $upgrade = $this->view->capture(
+            'frontend/partials/upgrade',
+            [
+                'machine' => $machine,
+                'operable' => $operable,
+                'labels' => [
+                    PricingRule::RESOURCE_CPU => __('CPU', 'cloud-vm-manager'),
+                    PricingRule::RESOURCE_RAM => __('Memory', 'cloud-vm-manager'),
+                    PricingRule::RESOURCE_DISK => __('Disk', 'cloud-vm-manager'),
+                    PricingRule::RESOURCE_BANDWIDTH => __('Bandwidth', 'cloud-vm-manager'),
+                ],
+            ]
+        );
+
         return $this->view->capture(
             'frontend/machine',
             [
@@ -233,6 +248,7 @@ final class Dashboard
                 'lock' => $lock,
                 'operable' => $operable,
                 'controls' => $controls,
+                'upgrade' => $upgrade,
                 'metrics' => $this->metrics->metrics($machine),
                 'storage' => $this->metrics->storage($machine),
                 'timeframes' => $this->metrics->timeframes(),
@@ -274,6 +290,11 @@ final class Dashboard
                     'failed' => __('The request could not be completed.', 'cloud-vm-manager'),
                     'noData' => __('No data for this period yet.', 'cloud-vm-manager'),
                     'passwordRequired' => __('Enter a new password first.', 'cloud-vm-manager'),
+                    'noUpgrades' => __('No other tier available', 'cloud-vm-manager'),
+                    'confirmUpgrade' => __(
+                        'Confirm this change? The payable amount is charged now.',
+                        'cloud-vm-manager'
+                    ),
                 ],
             ]
         );

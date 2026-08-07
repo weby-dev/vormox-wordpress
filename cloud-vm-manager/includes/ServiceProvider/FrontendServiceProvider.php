@@ -12,6 +12,7 @@ namespace CloudVmManager\ServiceProvider;
 
 use CloudVmManager\Admin\View;
 use CloudVmManager\Ajax\DashboardAjaxController;
+use CloudVmManager\Ajax\UpgradeAjaxController;
 use CloudVmManager\Ajax\VmControlAjaxController;
 use CloudVmManager\Container\AbstractServiceProvider;
 use CloudVmManager\Container\Container;
@@ -21,7 +22,9 @@ use CloudVmManager\Repository\IsoTemplateRepository;
 use CloudVmManager\Repository\LogRepository;
 use CloudVmManager\Repository\ProviderRepository;
 use CloudVmManager\Repository\VmOrderRepository;
+use CloudVmManager\Service\Billing\UpgradeService;
 use CloudVmManager\Service\Provider\ProviderGateway;
+use CloudVmManager\Service\Provisioning\GatewayResolver;
 use CloudVmManager\Service\Vm\VmControlService;
 use CloudVmManager\Service\Vm\VmMetricsService;
 use CloudVmManager\Service\Vm\VmService;
@@ -100,6 +103,32 @@ final class FrontendServiceProvider extends AbstractServiceProvider
         );
 
         $container->singleton(
+            UpgradeService::class,
+            static function (Container $c): UpgradeService {
+                return new UpgradeService(
+                    $c->get(ProviderGateway::class),
+                    $c->get(VmService::class),
+                    $c->get(VmOrderRepository::class),
+                    $c->get(GatewayResolver::class),
+                    $c->get(Cache::class),
+                    $c->get(Settings::class),
+                    $c->get(LoggerInterface::class)
+                );
+            }
+        );
+
+        $container->singleton(
+            UpgradeAjaxController::class,
+            static function (Container $c): UpgradeAjaxController {
+                return new UpgradeAjaxController(
+                    $c->get(VmService::class),
+                    $c->get(UpgradeService::class),
+                    $c->get(Settings::class)
+                );
+            }
+        );
+
+        $container->singleton(
             VmControlAjaxController::class,
             static function (Container $c): VmControlAjaxController {
                 return new VmControlAjaxController(
@@ -135,5 +164,9 @@ final class FrontendServiceProvider extends AbstractServiceProvider
         /** @var VmControlAjaxController $controlAjax */
         $controlAjax = $container->get(VmControlAjaxController::class);
         $controlAjax->register();
+
+        /** @var UpgradeAjaxController $upgradeAjax */
+        $upgradeAjax = $container->get(UpgradeAjaxController::class);
+        $upgradeAjax->register();
     }
 }

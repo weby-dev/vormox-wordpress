@@ -141,7 +141,7 @@ final class Dashboard
         if (!is_user_logged_in()) {
             return $this->view->capture(
                 'frontend/login',
-                ['loginUrl' => wp_login_url(get_permalink() ?: home_url('/'))]
+                ['loginUrl' => wp_login_url($this->url())]
             );
         }
 
@@ -163,13 +163,29 @@ final class Dashboard
     /**
      * URL of the dashboard, optionally addressing one machine.
      *
+     * The configured dashboard page wins over the permalink of whatever is
+     * currently in the loop, so the links stay right when the shortcode is
+     * rendered somewhere other than its own page — a widget, a block template
+     * or an archive.
+     *
      * @param array<string, string|int> $args
      */
-    public static function url(array $args = []): string
+    public function url(array $args = []): string
     {
-        $base = get_permalink();
+        $base = '';
+        $pageId = $this->settings->getInt('dashboard_page_id');
 
-        if (!is_string($base) || $base === '') {
+        if ($pageId > 0) {
+            $permalink = get_permalink($pageId);
+            $base = is_string($permalink) ? $permalink : '';
+        }
+
+        if ($base === '') {
+            $permalink = get_permalink();
+            $base = is_string($permalink) ? $permalink : '';
+        }
+
+        if ($base === '') {
             $base = home_url('/');
         }
 
@@ -195,7 +211,7 @@ final class Dashboard
                 'wallet' => $providerId > 0 ? $this->wallet->balance($providerId) : null,
                 'transactions' => $providerId > 0 ? $this->wallet->transactions($providerId, 8) : [],
                 'activity' => $this->logs->forUser($userId, 8),
-                'baseUrl' => self::url(),
+                'baseUrl' => $this->url(),
             ]
         );
     }
@@ -210,7 +226,7 @@ final class Dashboard
         if ($machine === null) {
             return $this->view->capture(
                 'frontend/not-found',
-                ['backUrl' => self::url()]
+                ['backUrl' => $this->url()]
             );
         }
 
@@ -256,7 +272,7 @@ final class Dashboard
                 'activity' => $this->machines->auditLogs($machine, 8),
                 'localActivity' => $this->logs->forVmOrder($machine->id(), 8),
                 'wallet' => $this->wallet->balance($machine->getProviderId()),
-                'backUrl' => self::url(),
+                'backUrl' => $this->url(),
                 'refreshInterval' => max(10, $this->settings->getInt('metrics_refresh_interval', 30)),
             ]
         );

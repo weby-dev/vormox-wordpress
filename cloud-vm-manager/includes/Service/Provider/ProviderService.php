@@ -53,6 +53,11 @@ final class ProviderService
     private $cache;
 
     /**
+     * @var ProviderPurger
+     */
+    private $purger;
+
+    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -62,12 +67,14 @@ final class ProviderService
         EncryptorInterface $encryptor,
         ProviderAuthenticator $authenticator,
         Cache $cache,
+        ProviderPurger $purger,
         LoggerInterface $logger
     ) {
         $this->providers = $providers;
         $this->encryptor = $encryptor;
         $this->authenticator = $authenticator;
         $this->cache = $cache;
+        $this->purger = $purger;
         $this->logger = $logger;
     }
 
@@ -184,7 +191,11 @@ final class ProviderService
     }
 
     /**
-     * Remove a provider and everything cached for it.
+     * Remove a provider together with the catalogue it owns.
+     *
+     * The catalogue is purged before the provider row so a failure part way
+     * through leaves the provider in place and the operator able to retry,
+     * rather than leaving rows nothing points at any more.
      */
     public function delete(int $id): bool
     {
@@ -195,11 +206,12 @@ final class ProviderService
         }
 
         $this->cache->flush($id);
+        $purged = $this->purger->purge($id);
         $deleted = $this->providers->delete($id);
 
         if ($deleted) {
             $this->logger->notice(
-                sprintf('Provider "%s" deleted.', $provider->getName()),
+                sprintf('Provider "%s" deleted with %d catalogue rows.', $provider->getName(), $purged),
                 ['channel' => LogEntry::CHANNEL_ADMIN, 'provider_id' => $id]
             );
         }

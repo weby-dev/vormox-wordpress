@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace CloudVmManager\Admin;
 
+use CloudVmManager\Admin\Controller\DashboardController;
 use CloudVmManager\Admin\Controller\ProvidersController;
 use CloudVmManager\Admin\Controller\SettingsController;
 use CloudVmManager\Admin\Controller\SyncController;
@@ -34,6 +35,11 @@ final class Menu
     private $providers;
 
     /**
+     * @var DashboardController
+     */
+    private $dashboard;
+
+    /**
      * @var VmOrdersController
      */
     private $vmOrders;
@@ -54,12 +60,14 @@ final class Menu
     private $assets;
 
     public function __construct(
+        DashboardController $dashboard,
         ProvidersController $providers,
         VmOrdersController $vmOrders,
         SyncController $sync,
         SettingsController $settings,
         Assets $assets
     ) {
+        $this->dashboard = $dashboard;
         $this->providers = $providers;
         $this->vmOrders = $vmOrders;
         $this->sync = $sync;
@@ -79,14 +87,23 @@ final class Menu
             __('Cloud VM Manager', 'cloud-vm-manager'),
             __('Cloud VM', 'cloud-vm-manager'),
             $capability,
-            ProvidersController::PAGE,
-            [$this->providers, 'render'],
+            DashboardController::PAGE,
+            [$this->dashboard, 'render'],
             self::ICON,
             self::MENU_POSITION
         );
 
         $hooks[] = add_submenu_page(
-            ProvidersController::PAGE,
+            DashboardController::PAGE,
+            __('Cloud VM Manager', 'cloud-vm-manager'),
+            __('Dashboard', 'cloud-vm-manager'),
+            $capability,
+            DashboardController::PAGE,
+            [$this->dashboard, 'render']
+        );
+
+        $hooks[] = add_submenu_page(
+            DashboardController::PAGE,
             __('Cloud Providers', 'cloud-vm-manager'),
             __('Providers', 'cloud-vm-manager'),
             $capability,
@@ -95,7 +112,7 @@ final class Menu
         );
 
         $hooks[] = add_submenu_page(
-            ProvidersController::PAGE,
+            DashboardController::PAGE,
             __('Virtual Machines', 'cloud-vm-manager'),
             __('Virtual Machines', 'cloud-vm-manager'),
             $capability,
@@ -104,7 +121,7 @@ final class Menu
         );
 
         $hooks[] = add_submenu_page(
-            ProvidersController::PAGE,
+            DashboardController::PAGE,
             __('Catalogue Synchronisation', 'cloud-vm-manager'),
             __('Synchronisation', 'cloud-vm-manager'),
             $capability,
@@ -113,7 +130,7 @@ final class Menu
         );
 
         $hooks[] = add_submenu_page(
-            ProvidersController::PAGE,
+            DashboardController::PAGE,
             __('Cloud VM Settings', 'cloud-vm-manager'),
             __('Settings', 'cloud-vm-manager'),
             $capability,

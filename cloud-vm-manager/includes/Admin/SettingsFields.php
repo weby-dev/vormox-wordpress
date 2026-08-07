@@ -26,11 +26,35 @@ final class SettingsFields
     public const TYPE_TEXT = 'text';
 
     /**
-     * Field groups, each with its label and its fields.
+     * Field groups ready to render, with every option list resolved.
      *
      * @return array<int, array{title: string, description: string, fields: array<int, array<string, mixed>>}>
      */
     public function groups(): array
+    {
+        $groups = $this->declaration();
+
+        foreach ($groups as $groupIndex => $group) {
+            foreach ($group['fields'] as $fieldIndex => $field) {
+                if (isset($field['options']) && is_callable($field['options'])) {
+                    $groups[$groupIndex]['fields'][$fieldIndex]['options'] = ($field['options'])();
+                }
+            }
+        }
+
+        return $groups;
+    }
+
+    /**
+     * The declared fields.
+     *
+     * Option lists are declared as callables so that reading the key list —
+     * which happens on every settings save — never runs the queries a select
+     * needs to render.
+     *
+     * @return array<int, array{title: string, description: string, fields: array<int, array<string, mixed>>}>
+     */
+    private function declaration(): array
     {
         return [
             [
@@ -88,7 +112,7 @@ final class SettingsFields
                         'key' => 'sync_interval',
                         'label' => __('Synchronisation interval', 'cloud-vm-manager'),
                         'type' => self::TYPE_SELECT,
-                        'options' => $this->scheduleOptions(),
+                        'options' => [$this, 'scheduleOptions'],
                     ],
                     [
                         'key' => 'sync_retention_days',
@@ -172,6 +196,16 @@ final class SettingsFields
                         'type' => self::TYPE_CHECKBOX,
                         'checkbox_label' => __(
                             'Let customers manage their machines from the frontend',
+                            'cloud-vm-manager'
+                        ),
+                    ],
+                    [
+                        'key' => 'dashboard_page_id',
+                        'label' => __('Dashboard page', 'cloud-vm-manager'),
+                        'type' => self::TYPE_SELECT,
+                        'options' => [$this, 'pageOptions'],
+                        'description' => __(
+                            'Page holding the dashboard shortcode. Every link the plugin builds points at it.',
                             'cloud-vm-manager'
                         ),
                     ],
@@ -273,7 +307,7 @@ final class SettingsFields
     {
         $keys = [];
 
-        foreach ($this->groups() as $group) {
+        foreach ($this->declaration() as $group) {
             foreach ($group['fields'] as $field) {
                 $keys[] = (string) $field['key'];
             }
@@ -291,7 +325,7 @@ final class SettingsFields
     {
         $keys = [];
 
-        foreach ($this->groups() as $group) {
+        foreach ($this->declaration() as $group) {
             foreach ($group['fields'] as $field) {
                 if (($field['type'] ?? '') === self::TYPE_CHECKBOX) {
                     $keys[] = (string) $field['key'];
@@ -303,11 +337,33 @@ final class SettingsFields
     }
 
     /**
+     * Published pages an administrator can point the dashboard links at.
+     *
+     * @return array<int|string, string>
+     */
+    public function pageOptions(): array
+    {
+        $options = [0 => __('Not set', 'cloud-vm-manager')];
+
+        $pages = get_pages(['sort_column' => 'post_title', 'post_status' => 'publish']);
+
+        if (!is_array($pages)) {
+            return $options;
+        }
+
+        foreach ($pages as $page) {
+            $options[(int) $page->ID] = (string) $page->post_title;
+        }
+
+        return $options;
+    }
+
+    /**
      * Available cron schedules, labelled for the select field.
      *
      * @return array<string, string>
      */
-    private function scheduleOptions(): array
+    public function scheduleOptions(): array
     {
         $options = [];
         $schedules = wp_get_schedules();

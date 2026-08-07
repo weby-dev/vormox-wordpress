@@ -27,7 +27,7 @@ defined('ABSPATH') || exit;
  */
 final class ProvidersController
 {
-    public const PAGE = 'cloud-vm-manager';
+    public const PAGE = 'cloud-vm-manager-providers';
     public const ACTION_SAVE = 'cvm_save_provider';
     public const ACTION_DELETE = 'cvm_delete_provider';
 

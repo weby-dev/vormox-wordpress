@@ -12,6 +12,7 @@ namespace CloudVmManager\ServiceProvider;
 
 use CloudVmManager\Admin\Assets;
 use CloudVmManager\Admin\Controller\ProvidersController;
+use CloudVmManager\Admin\Controller\DashboardController;
 use CloudVmManager\Admin\Controller\SettingsController;
 use CloudVmManager\Admin\Controller\SyncController;
 use CloudVmManager\Admin\Controller\VmOrdersController;
@@ -25,10 +26,12 @@ use CloudVmManager\Bootstrap\Requirements;
 use CloudVmManager\Container\AbstractServiceProvider;
 use CloudVmManager\Container\Container;
 use CloudVmManager\Cron\CronManager;
+use CloudVmManager\Database\Installer;
 use CloudVmManager\Repository\BandwidthPlanRepository;
 use CloudVmManager\Repository\CpuPlanRepository;
 use CloudVmManager\Repository\DiskPlanRepository;
 use CloudVmManager\Repository\IsoTemplateRepository;
+use CloudVmManager\Repository\LogRepository;
 use CloudVmManager\Repository\PricingRepository;
 use CloudVmManager\Repository\ProviderRepository;
 use CloudVmManager\Repository\RamPlanRepository;
@@ -136,9 +139,25 @@ final class AdminServiceProvider extends AbstractServiceProvider
         );
 
         $container->singleton(
+            DashboardController::class,
+            static function (Container $c): DashboardController {
+                return new DashboardController(
+                    $c->get(ProviderRepository::class),
+                    $c->get(VmOrderRepository::class),
+                    $c->get(SyncRunRepository::class),
+                    $c->get(LogRepository::class),
+                    $c->get(CronManager::class),
+                    $c->get(Installer::class),
+                    $c->get(View::class)
+                );
+            }
+        );
+
+        $container->singleton(
             Menu::class,
             static function (Container $c): Menu {
                 return new Menu(
+                    $c->get(DashboardController::class),
                     $c->get(ProvidersController::class),
                     $c->get(VmOrdersController::class),
                     $c->get(SyncController::class),

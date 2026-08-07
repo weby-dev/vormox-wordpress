@@ -26,7 +26,8 @@
         "sort-packages": true
     },
     "scripts": {
-        "lint": "find includes templates -name '*.php' -print0 | xargs -0 -n1 -P4 php -l",
-        "compat": "phpcs -p includes cloud-vm-manager.php uninstall.php --standard=PHPCompatibility --runtime-set testVersion 7.4-"
+        "lint": "find includes templates cloud-vm-manager.php uninstall.php -name '*.php' -print0 | xargs -0 -n1 -P4 php -l",
+        "compat": "phpcs -p includes templates cloud-vm-manager.php uninstall.php --standard=PHPCompatibility --runtime-set testVersion 7.4-",
+        "style": "phpcs -p includes cloud-vm-manager.php uninstall.php --standard=PSR12"
     }
 }

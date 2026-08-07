@@ -20,6 +20,7 @@ use CloudVmManager\Repository\ProviderRepository;
 use CloudVmManager\Service\Provider\ConnectionTester;
 use CloudVmManager\Service\Provider\ProviderAuthenticator;
 use CloudVmManager\Service\Provider\ProviderGateway;
+use CloudVmManager\Service\Provider\ProviderPurger;
 use CloudVmManager\Service\Provider\ProviderService;
 use CloudVmManager\Support\Cache;
 use CloudVmManager\Support\Settings;
@@ -85,6 +86,7 @@ final class HttpServiceProvider extends AbstractServiceProvider
                     $c->get(EncryptorInterface::class),
                     $c->get(ProviderAuthenticator::class),
                     $c->get(Cache::class),
+                    $c->get(ProviderPurger::class),
                     $c->get(LoggerInterface::class)
                 );
             }

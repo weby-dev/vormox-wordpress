@@ -431,6 +431,7 @@ final class Schema
             updated_at datetime NOT NULL,
             PRIMARY KEY  (id),
             UNIQUE KEY user_provider (user_id,provider_id),
+            KEY provider_id (provider_id),
             KEY email (email),
             KEY remote_user_id (remote_user_id),
             KEY status (status)

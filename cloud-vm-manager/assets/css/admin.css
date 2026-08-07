@@ -165,6 +165,60 @@
     color: #b26200;
 }
 
+/* Dashboard tiles */
+
+.cvm-stat-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    margin-bottom: 20px;
+}
+
+.cvm-stat-tile {
+    background: var(--cvm-surface);
+    border: 1px solid var(--cvm-border);
+    border-radius: var(--cvm-radius);
+    box-shadow: var(--cvm-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px;
+}
+
+.cvm-stat-tile-label {
+    color: var(--cvm-muted);
+    font-size: 12px;
+}
+
+.cvm-stat-tile-value {
+    font-size: 24px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.cvm-health {
+    margin: 0 0 12px;
+}
+
+.cvm-health-item {
+    border-left: 3px solid var(--cvm-neutral-border);
+    margin: 0 0 8px;
+    padding: 6px 0 6px 12px;
+}
+
+.cvm-health-success {
+    border-left-color: var(--cvm-success-text);
+}
+
+.cvm-health-warning {
+    border-left-color: #dba617;
+}
+
+.cvm-health-error {
+    border-left-color: var(--cvm-error-text);
+}
+
 /* Badges */
 
 .cvm-badge {

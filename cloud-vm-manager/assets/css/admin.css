@@ -304,3 +304,63 @@
         width: auto;
     }
 }
+
+/* Branding. */
+
+/*
+ * The mark reaches this rule as --cvm-logo, printed into admin_head on the
+ * plugin screens, so every header is branded without a template knowing about
+ * it and a filtered logo replaces all of them at once.
+ */
+/* Keeps the logo beside the title instead of letting space-between split them. */
+.cvm-page-header > div:first-of-type {
+    margin-right: auto;
+}
+
+.cvm-page-header::before {
+    content: "";
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    align-self: center;
+    border-radius: 9px;
+    background: var(--cvm-logo) no-repeat center/contain;
+}
+
+/*
+ * WordPress renders a data URI menu icon as a background image, so it cannot
+ * inherit the menu colour. The mark is drawn in the default grey and inverted
+ * to white on hover and on the current item, matching the core icons.
+ */
+#adminmenu #toplevel_page_cloud-vm-manager:hover .wp-menu-image.svg,
+#adminmenu #toplevel_page_cloud-vm-manager.wp-has-current-submenu .wp-menu-image.svg,
+#adminmenu #toplevel_page_cloud-vm-manager.current .wp-menu-image.svg {
+    filter: brightness(0) invert(1);
+}
+
+/* Machine row actions and usage. */
+.cvm-row-actions {
+    white-space: nowrap;
+}
+
+.cvm-row-actions .button {
+    margin-right: 4px;
+}
+
+.cvm-row-feedback {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+}
+
+.cvm-row-feedback.is-success {
+    color: #007017;
+}
+
+.cvm-row-feedback.is-error {
+    color: #b32d2e;
+}
+
+.cvm-usage-cell {
+    white-space: nowrap;
+}

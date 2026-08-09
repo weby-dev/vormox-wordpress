@@ -15,6 +15,7 @@ use CloudVmManager\Admin\View;
 use CloudVmManager\Model\PricingRule;
 use CloudVmManager\Model\VmOrder;
 use CloudVmManager\Repository\LogRepository;
+use CloudVmManager\Service\Vm\PanelLink;
 use CloudVmManager\Service\Vm\VmControlService;
 use CloudVmManager\Service\Vm\VmMetricsService;
 use CloudVmManager\Service\Vm\VmService;
@@ -70,6 +71,11 @@ final class Dashboard
     private $settings;
 
     /**
+     * @var PanelLink
+     */
+    private $panel;
+
+    /**
      * @var View
      */
     private $view;
@@ -86,6 +92,7 @@ final class Dashboard
         WalletService $wallet,
         LogRepository $logs,
         Settings $settings,
+        PanelLink $panel,
         View $view
     ) {
         $this->machines = $machines;
@@ -94,6 +101,7 @@ final class Dashboard
         $this->wallet = $wallet;
         $this->logs = $logs;
         $this->settings = $settings;
+        $this->panel = $panel;
         $this->view = $view;
     }
 
@@ -232,6 +240,7 @@ final class Dashboard
 
         $lock = $this->machines->lockStatus($machine);
         $operable = !$lock['locked'] && $machine->isProvisioned() && !$machine->isTerminated();
+        $provider = $this->machines->providerFor($machine);
 
         $controls = $this->view->capture(
             'frontend/partials/controls',
@@ -273,6 +282,8 @@ final class Dashboard
                 'localActivity' => $this->logs->forVmOrder($machine->id(), 8),
                 'wallet' => $this->wallet->balance($machine->getProviderId()),
                 'backUrl' => $this->url(),
+                'panelUrl' => $this->panel->forMachine($machine, $provider),
+                'panelLabel' => $this->panel->label($provider),
                 'refreshInterval' => max(10, $this->settings->getInt('metrics_refresh_interval', 30)),
             ]
         );

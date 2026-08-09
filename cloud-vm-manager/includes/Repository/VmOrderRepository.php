@@ -67,6 +67,9 @@ final class VmOrderRepository extends AbstractRepository
             'bandwidth_gb' => '%d',
             'status' => '%s',
             'provisioning_status' => '%s',
+            'disk_used_mb' => '%d',
+            'bandwidth_used_mb' => '%d',
+            'usage_updated_at' => '%s',
             'attempts' => '%d',
             'building_since' => '%s',
             'last_attempt_at' => '%s',
@@ -220,6 +223,28 @@ final class VmOrderRepository extends AbstractRepository
         $sql = 'SELECT COUNT(DISTINCT user_id) FROM `' . $this->table() . '` WHERE user_id > 0';
 
         return (int) $this->scalar($sql);
+    }
+
+    /**
+     * Provisioned machines whose usage figures are the most out of date.
+     *
+     * @return VmOrder[]
+     */
+    public function staleUsage(int $limit = 20): array
+    {
+        $sql = 'SELECT * FROM `' . $this->table() . '`'
+            . ' WHERE provisioning_status = %s AND status = %s'
+            . ' ORDER BY usage_updated_at IS NULL DESC, usage_updated_at ASC LIMIT %d';
+
+        $rows = $this->results(
+            $sql,
+            [VmOrder::PROVISIONING_COMPLETED, VmOrder::STATUS_ACTIVE, max(1, $limit)]
+        );
+
+        /** @var VmOrder[] $orders */
+        $orders = array_map([$this, 'hydrate'], $rows);
+
+        return $orders;
     }
 
     /**

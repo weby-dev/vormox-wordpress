@@ -636,3 +636,16 @@
         animation-duration: 4s;
     }
 }
+
+/* Header actions beside the status pill. */
+.cvm-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.cvm-button-ghost {
+    background: transparent;
+    border: 1px solid currentColor;
+}

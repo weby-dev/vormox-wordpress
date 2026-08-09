@@ -82,6 +82,10 @@ final class Assets
                     'connected' => __('Connected', 'cloud-vm-manager'),
                     'disconnected' => __('Disconnected', 'cloud-vm-manager'),
                     'error' => __('Error', 'cloud-vm-manager'),
+                    /* translators: %s: formatted size. */
+                    'usageDisk' => __('Disk %s', 'cloud-vm-manager'),
+                    /* translators: %s: formatted size. */
+                    'usageTransfer' => __('Transfer %s', 'cloud-vm-manager'),
                 ],
             ]
         );

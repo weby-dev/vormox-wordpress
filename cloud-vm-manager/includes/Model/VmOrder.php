@@ -102,6 +102,9 @@ final class VmOrder extends AbstractModel
             'bandwidth_gb' => 'int',
             'status' => 'string',
             'provisioning_status' => 'string',
+            'disk_used_mb' => 'int',
+            'bandwidth_used_mb' => 'int',
+            'usage_updated_at' => 'string',
             'attempts' => 'int',
             'building_since' => 'string',
             'last_attempt_at' => 'string',
@@ -250,6 +253,35 @@ final class VmOrder extends AbstractModel
     public function getAttempts(): int
     {
         return $this->getInt('attempts');
+    }
+
+    /**
+     * Disk used by the machine, in megabytes.
+     */
+    public function getDiskUsedMb(): int
+    {
+        return $this->getInt('disk_used_mb');
+    }
+
+    /**
+     * Bandwidth consumed this period, in megabytes.
+     */
+    public function getBandwidthUsedMb(): int
+    {
+        return $this->getInt('bandwidth_used_mb');
+    }
+
+    public function getUsageUpdatedAt(): string
+    {
+        return $this->getString('usage_updated_at');
+    }
+
+    /**
+     * Whether usage figures have ever been read for this machine.
+     */
+    public function hasUsage(): bool
+    {
+        return $this->getUsageUpdatedAt() !== '';
     }
 
     /**

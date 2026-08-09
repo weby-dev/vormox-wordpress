@@ -28,6 +28,11 @@ The plugin lives in [`cloud-vm-manager/`](cloud-vm-manager).
   invoices.
 * Power controls, OS reinstall, password reset, MAC regeneration and network repair.
 * Resource upgrades and renewals priced by the backend, with coupon support.
+* Account synchronisation that re-reads machines from the backend and imports any
+  it holds that the store has no row for.
+* Disk and transfer usage collected on a schedule and shown per machine.
+* A *Login to …* link that opens a machine at the provider panel.
+* Vormox branding on the menu, the plugin row, the page headers and the browser tab.
 
 ## Documentation
 
@@ -71,7 +76,7 @@ Every phase is verified before it lands:
 | `php -l` on every file | clean |
 | PHPCompatibility, `testVersion 7.4-` | 0 issues across 7.4 → 8.4 |
 | PSR-12 | clean apart from the mandatory `ABSPATH` guard and the WooCommerce method names the product class must keep |
-| Functional suites | 9 suites, 910 checks |
+| Functional suites | 11 suites, 979 checks |
 
 The suites boot the plugin against stubbed WordPress and WooCommerce with an
 in-memory `wpdb` that really executes the statements the repositories generate,

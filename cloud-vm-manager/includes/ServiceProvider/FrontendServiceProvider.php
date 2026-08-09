@@ -27,6 +27,9 @@ use CloudVmManager\Service\Provider\ProviderGateway;
 use CloudVmManager\Service\Provisioning\GatewayResolver;
 use CloudVmManager\Service\Vm\VmControlService;
 use CloudVmManager\Service\Provisioning\ProvisioningService;
+use CloudVmManager\Service\Vm\AccountSyncService;
+use CloudVmManager\Service\Vm\PanelLink;
+use CloudVmManager\Service\Vm\UsageService;
 use CloudVmManager\Service\Vm\VmMetricsService;
 use CloudVmManager\Service\Vm\VmService;
 use CloudVmManager\Service\Vm\WalletService;
@@ -65,6 +68,36 @@ final class FrontendServiceProvider extends AbstractServiceProvider
         );
 
         $container->singleton(
+            UsageService::class,
+            static function (Container $c): UsageService {
+                return new UsageService(
+                    $c->get(VmMetricsService::class),
+                    $c->get(VmOrderRepository::class),
+                    $c->get(LoggerInterface::class)
+                );
+            }
+        );
+
+        $container->singleton(
+            AccountSyncService::class,
+            static function (Container $c): AccountSyncService {
+                return new AccountSyncService(
+                    $c->get(ProviderGateway::class),
+                    $c->get(VmOrderRepository::class),
+                    $c->get(VmService::class),
+                    $c->get(LoggerInterface::class)
+                );
+            }
+        );
+
+        $container->singleton(
+            PanelLink::class,
+            static function (): PanelLink {
+                return new PanelLink();
+            }
+        );
+
+        $container->singleton(
             WalletService::class,
             static function (Container $c): WalletService {
                 return new WalletService(
@@ -98,6 +131,7 @@ final class FrontendServiceProvider extends AbstractServiceProvider
                     $c->get(WalletService::class),
                     $c->get(LogRepository::class),
                     $c->get(Settings::class),
+                    $c->get(PanelLink::class),
                     $c->get(View::class)
                 );
             }

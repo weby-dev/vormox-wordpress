@@ -15,6 +15,7 @@ use CloudVmManager\Admin\View;
 use CloudVmManager\Model\VmOrder;
 use CloudVmManager\Repository\ProviderRepository;
 use CloudVmManager\Repository\VmOrderRepository;
+use CloudVmManager\Service\Vm\PanelLink;
 
 defined('ABSPATH') || exit;
 
@@ -38,15 +39,66 @@ final class VmOrdersController
     private $providers;
 
     /**
+     * @var PanelLink
+     */
+    private $panel;
+
+    /**
      * @var View
      */
     private $view;
 
-    public function __construct(VmOrderRepository $orders, ProviderRepository $providers, View $view)
-    {
+    public function __construct(
+        VmOrderRepository $orders,
+        ProviderRepository $providers,
+        PanelLink $panel,
+        View $view
+    ) {
         $this->orders = $orders;
         $this->providers = $providers;
+        $this->panel = $panel;
         $this->view = $view;
+    }
+
+    /**
+     * Panel link of every listed machine, keyed by row identifier.
+     *
+     * @param VmOrder[] $orders
+     *
+     * @return array<int, string>
+     */
+    private function panelUrls(array $orders): array
+    {
+        $urls = [];
+        $providers = [];
+
+        foreach ($orders as $order) {
+            $providerId = $order->getProviderId();
+
+            if (!array_key_exists($providerId, $providers)) {
+                $providers[$providerId] = $this->providers->findProvider($providerId);
+            }
+
+            $urls[$order->id()] = $this->panel->forMachine($order, $providers[$providerId]);
+        }
+
+        return $urls;
+    }
+
+    /**
+     * Link label per provider, so each one is named in its own button.
+     *
+     * @return array<int, string>
+     */
+    private function panelLabels(): array
+    {
+        $labels = [];
+
+        foreach ($this->providers->all() as $provider) {
+            $labels[$provider->id()] = $this->panel->label($provider);
+        }
+
+        return $labels;
     }
 
     public function render(): void
@@ -91,6 +143,8 @@ final class VmOrdersController
                 'statuses' => $this->statusLabels(),
                 'counts' => $this->orders->countByStatus(),
                 'providerNames' => $providerNames,
+                'panelUrls' => $this->panelUrls($paginated['items']),
+                'panelLabels' => $this->panelLabels(),
                 'baseUrl' => self::url(),
             ]
         );

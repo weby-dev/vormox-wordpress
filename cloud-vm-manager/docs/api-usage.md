@@ -118,6 +118,28 @@ The plugin never computes a pro rata amount. Every figure a customer sees comes
 from the calculation endpoint, so the amount they confirm is the amount the
 backend charges.
 
+## Account synchronisation and usage
+
+| Method | Path | Used by |
+| --- | --- | --- |
+| GET | `/api/users/orders/overview` | `AccountSyncService::syncProvider()` |
+| GET | `/api/users/orders/{vmId}/details` | `AccountSyncService::syncMachine()` |
+| GET | `/api/users/vms/{vmId}/storage` | `UsageService` |
+| GET | `/api/users/vms/{vmId}/metrics?timeframe=month` | `UsageService` |
+
+Account synchronisation adds no endpoint of its own: it re-reads what
+provisioning already reads and writes the differences onto the stored rows. A
+machine the backend holds that the store has no row for is imported with a zero
+WooCommerce order id, which is what marks it as never having been sold here.
+
+Usage is derived from the same two endpoints the dashboard uses, so a figure on
+screen never costs an extra request.
+
+No single sign on endpoint is documented, so the *Login to …* links are plain
+deep links to the provider's own panel built from its host URL. Nothing is
+minted, and filtering `cloud_vm_manager_panel_url` is enough to upgrade every
+link if a sign on endpoint is added later.
+
 ## Public
 
 | Method | Path | Used by |
@@ -150,6 +172,7 @@ nothing is lost.
 | `/api/pricing/*/ram\|disk\|bandwidth` | the specification value, falling back to the leading number of the documented `label` |
 | `/api/users/orders/overview` | machine id, hostname, address |
 | `/api/users/orders/{vmId}/details` | operating system, backend user id |
+| `/api/users/vms/{vmId}/metrics` | the transfer counters usage is summed from |
 
 A detail record that omits a field never blanks what the creation response
 already supplied, so a sparse response cannot erase a machine's address or

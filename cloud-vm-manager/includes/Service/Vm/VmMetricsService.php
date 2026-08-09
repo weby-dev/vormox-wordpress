@@ -274,6 +274,13 @@ final class VmMetricsService
         $diskTotal = (float) $this->numeric(Arr::first($current, ['disk_total_bytes', 'diskTotalBytes'], 0));
         $diskUsed = (float) $this->numeric(Arr::first($current, ['disk_used_bytes', 'diskUsedBytes'], 0));
 
+        /*
+         * The transfer counters are carried through so usage is summed from the
+         * same reading the dashboard draws, rather than costing a second call.
+         */
+        $netIn = Arr::first($current, ['netin', 'netIn', 'networkIn', 'trafficIn'], null);
+        $netOut = Arr::first($current, ['netout', 'netOut', 'networkOut', 'trafficOut'], null);
+
         return [
             'available' => true,
             'message' => '',
@@ -283,6 +290,8 @@ final class VmMetricsService
                 'disk_total_bytes' => $diskTotal,
                 'disk_used_bytes' => $diskUsed,
                 'disk_percent' => $diskTotal > 0 ? round($diskUsed / $diskTotal * 100, 1) : 0.0,
+                'net_in_bytes' => is_numeric($netIn) ? (float) $netIn : null,
+                'net_out_bytes' => is_numeric($netOut) ? (float) $netOut : null,
             ],
             'series' => $series,
             'labels' => $labels,
@@ -360,6 +369,8 @@ final class VmMetricsService
                 'disk_total_bytes' => 0.0,
                 'disk_used_bytes' => 0.0,
                 'disk_percent' => 0.0,
+                'net_in_bytes' => null,
+                'net_out_bytes' => null,
             ],
             'series' => ['cpu' => [], 'memory' => [], 'netin' => [], 'netout' => []],
             'labels' => [],

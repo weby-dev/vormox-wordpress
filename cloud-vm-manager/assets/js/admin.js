@@ -164,7 +164,110 @@
             });
     }
 
+    /**
+     * Run a machine row action and write the answer back into the row.
+     *
+     * @param {HTMLElement} button  Button that was pressed.
+     * @param {string}      action  Registered AJAX action.
+     * @param {string}      machine Machine row identifier.
+     */
+    function runMachineAction(button, action, machine) {
+        var row = button.closest('tr');
+        var feedback = row ? row.querySelector('[data-cvm-row-feedback]') : null;
+
+        button.disabled = true;
+
+        if (feedback) {
+            feedback.textContent = strings.working || '';
+            feedback.className = 'cvm-row-feedback is-busy';
+        }
+
+        request(action, { machine_id: machine })
+            .then(function (envelope) {
+                var data = (envelope && envelope.data) || {};
+                var ok = Boolean(envelope && envelope.success);
+
+                if (feedback) {
+                    feedback.textContent = data.message || (ok ? '' : strings.unexpectedError);
+                    feedback.className = 'cvm-row-feedback ' + (ok ? 'is-success' : 'is-error');
+                }
+
+                if (ok && data.machine) {
+                    applyMachine(row, data.machine);
+                }
+            })
+            .catch(function () {
+                if (feedback) {
+                    feedback.textContent = strings.unexpectedError || '';
+                    feedback.className = 'cvm-row-feedback is-error';
+                }
+            })
+            .finally(function () {
+                button.disabled = false;
+            });
+    }
+
+    /**
+     * Write refreshed machine fields into a row without reloading the page.
+     *
+     * @param {HTMLElement} row     Table row of the machine.
+     * @param {Object}      machine Machine payload.
+     */
+    function applyMachine(row, machine) {
+        if (!row) {
+            return;
+        }
+
+        var usage = row.querySelector('[data-cvm-usage]');
+
+        if (usage && machine.usage_updated_at) {
+            usage.textContent = '';
+
+            [
+                [strings.usageDisk, machine.disk_used_mb],
+                [strings.usageTransfer, machine.bandwidth_used_mb]
+            ].forEach(function (pair) {
+                var line = document.createElement('div');
+
+                line.textContent = String(pair[0] || '').replace('%s', formatSize(Number(pair[1]) || 0));
+                usage.appendChild(line);
+            });
+        }
+    }
+
+    /**
+     * Format a megabyte count the way the server does.
+     *
+     * @param {number} megabytes Size in megabytes.
+     *
+     * @return {string} Human readable size.
+     */
+    function formatSize(megabytes) {
+        var units = ['MB', 'GB', 'TB'];
+        var value = megabytes;
+        var unit = 0;
+
+        while (value >= 1024 && unit < units.length - 1) {
+            value /= 1024;
+            unit += 1;
+        }
+
+        return (Math.round(value * 10) / 10) + ' ' + units[unit];
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('[data-cvm-sync-machine]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                runMachineAction(button, 'cvm_sync_machine', button.getAttribute('data-cvm-sync-machine'));
+            });
+        });
+
+        document.querySelectorAll('[data-cvm-refresh-usage]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                runMachineAction(button, 'cvm_refresh_usage', button.getAttribute('data-cvm-refresh-usage'));
+            });
+        });
+
         document.querySelectorAll('.cvm-action').forEach(function (button) {
             button.addEventListener('click', function (event) {
                 event.preventDefault();

@@ -12,7 +12,10 @@
    zones, operating system images and the four pricing resources.
 5. Create a product, choose the **Cloud Virtual Machine** type, and configure it
    on the *Virtual machine* tab.
-6. Put `[cloud_vm_dashboard]` on a page so customers can manage their machines.
+6. Put `[cloud_vm_dashboard]` on a page so customers can manage their machines, then
+   name that page under **Settings → Customer dashboard**.
+7. Set the provider's **Host URL** to its panel address. It is what the
+   *Login to …* buttons open, on the machine list and on the customer dashboard.
 
 ## Settings
 
@@ -93,6 +96,7 @@ re-authenticated. Setting the constant avoids that.
 | `cvm_sync_catalogue` | `sync_interval` | Refresh the provider catalogue. |
 | `cvm_provisioning_retry` | every five minutes | Finish machines that are still pending. |
 | `cvm_provisioning_build_check` | one-off, ~20s after creation | Check a machine that has just been created, so a customer never waits for the next five minute tick. |
+| `cvm_usage_refresh` | hourly | Read the disk and transfer figures of the machines whose usage is most out of date. |
 | `cvm_maintenance` | daily | Prune expired cache rows, old logs and old sync runs. |
 
 ## Multisite

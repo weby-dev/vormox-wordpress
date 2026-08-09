@@ -7,6 +7,8 @@
  *
  * @var \CloudVmManager\Model\VmOrder[] $orders        Machines to display.
  * @var int                             $total         Total number of machines.
+ * @var array<int, string>              $panelUrls     Provider panel link per machine row.
+ * @var array<int, string>              $panelLabels   Provider panel link label per provider.
  * @var int                             $page          Current page.
  * @var int                             $pages         Number of pages.
  * @var string                          $status        Active status filter.
@@ -66,8 +68,10 @@ defined('ABSPATH') || exit;
                     <th scope="col"><?php esc_html_e('Provider', 'cloud-vm-manager'); ?></th>
                     <th scope="col"><?php esc_html_e('Status', 'cloud-vm-manager'); ?></th>
                     <th scope="col"><?php esc_html_e('Backend IDs', 'cloud-vm-manager'); ?></th>
+                    <th scope="col"><?php esc_html_e('Usage', 'cloud-vm-manager'); ?></th>
                     <th scope="col"><?php esc_html_e('Billing', 'cloud-vm-manager'); ?></th>
                     <th scope="col"><?php esc_html_e('Created', 'cloud-vm-manager'); ?></th>
+                    <th scope="col"><?php esc_html_e('Actions', 'cloud-vm-manager'); ?></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -124,6 +128,30 @@ defined('ABSPATH') || exit;
                                 <div>group: <?php echo esc_html($cvm_order->getGroupId()); ?></div>
                             <?php endif; ?>
                         </td>
+                        <td class="cvm-muted cvm-usage-cell" data-cvm-usage>
+                            <?php if ($cvm_order->hasUsage()) : ?>
+                                <div data-cvm-usage-disk>
+                                    <?php
+                                    printf(
+                                        /* translators: %s: formatted disk size. */
+                                        esc_html__('Disk %s', 'cloud-vm-manager'),
+                                        esc_html((string) size_format($cvm_order->getDiskUsedMb() * MB_IN_BYTES))
+                                    );
+                                    ?>
+                                </div>
+                                <div data-cvm-usage-transfer>
+                                    <?php
+                                    printf(
+                                        /* translators: %s: formatted transfer size. */
+                                        esc_html__('Transfer %s', 'cloud-vm-manager'),
+                                        esc_html((string) size_format($cvm_order->getBandwidthUsedMb() * MB_IN_BYTES))
+                                    );
+                                    ?>
+                                </div>
+                            <?php else : ?>
+                                <span data-cvm-usage-empty><?php esc_html_e('Not measured yet', 'cloud-vm-manager'); ?></span>
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <?php echo esc_html($cvm_order->getBillingCycle()); ?>
                             <div class="cvm-muted">
@@ -131,6 +159,23 @@ defined('ABSPATH') || exit;
                             </div>
                         </td>
                         <td class="cvm-muted"><?php echo esc_html($cvm_order->getString('created_at')); ?></td>
+                        <td class="cvm-row-actions">
+                            <?php if ($cvm_order->getRemoteVmId() > 0) : ?>
+                                <button type="button" class="button button-small" data-cvm-sync-machine="<?php echo esc_attr((string) $cvm_order->id()); ?>">
+                                    <?php esc_html_e('Sync account', 'cloud-vm-manager'); ?>
+                                </button>
+                                <button type="button" class="button button-small" data-cvm-refresh-usage="<?php echo esc_attr((string) $cvm_order->id()); ?>">
+                                    <?php esc_html_e('Usage', 'cloud-vm-manager'); ?>
+                                </button>
+                                <?php $cvm_panel = $panelUrls[$cvm_order->id()] ?? ''; ?>
+                                <?php if ($cvm_panel !== '') : ?>
+                                    <a class="button button-small" href="<?php echo esc_url($cvm_panel); ?>" target="_blank" rel="noopener noreferrer">
+                                        <?php echo esc_html($panelLabels[$cvm_order->getProviderId()] ?? __('Open panel', 'cloud-vm-manager')); ?>
+                                    </a>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                            <span class="cvm-row-feedback" data-cvm-row-feedback></span>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>

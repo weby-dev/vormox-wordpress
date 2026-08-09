@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace CloudVmManager\ServiceProvider;
 
 use CloudVmManager\Admin\Assets;
+use CloudVmManager\Admin\Branding;
 use CloudVmManager\Admin\Controller\ProvidersController;
 use CloudVmManager\Admin\Controller\DashboardController;
 use CloudVmManager\Admin\Controller\SettingsController;
@@ -20,6 +21,7 @@ use CloudVmManager\Admin\Menu;
 use CloudVmManager\Admin\Notices;
 use CloudVmManager\Admin\SettingsFields;
 use CloudVmManager\Admin\View;
+use CloudVmManager\Ajax\AccountSyncAjaxController;
 use CloudVmManager\Ajax\ProviderAjaxController;
 use CloudVmManager\Ajax\SyncAjaxController;
 use CloudVmManager\Bootstrap\Requirements;
@@ -42,6 +44,9 @@ use CloudVmManager\Service\Provider\ConnectionTester;
 use CloudVmManager\Service\Provider\ProviderAuthenticator;
 use CloudVmManager\Service\Provider\ProviderService;
 use CloudVmManager\Service\Sync\CatalogueSynchronizer;
+use CloudVmManager\Service\Vm\AccountSyncService;
+use CloudVmManager\Service\Vm\PanelLink;
+use CloudVmManager\Service\Vm\UsageService;
 use CloudVmManager\Support\Settings;
 
 defined('ABSPATH') || exit;
@@ -74,6 +79,14 @@ final class AdminServiceProvider extends AbstractServiceProvider
             Assets::class,
             static function (): Assets {
                 return new Assets();
+            }
+        );
+
+        /* Shared: the menu tells it which screens exist, admin_head reads them. */
+        $container->singleton(
+            Branding::class,
+            static function (): Branding {
+                return new Branding();
             }
         );
 
@@ -133,6 +146,7 @@ final class AdminServiceProvider extends AbstractServiceProvider
                 return new VmOrdersController(
                     $c->get(VmOrderRepository::class),
                     $c->get(ProviderRepository::class),
+                    $c->get(PanelLink::class),
                     $c->get(View::class)
                 );
             }
@@ -162,7 +176,8 @@ final class AdminServiceProvider extends AbstractServiceProvider
                     $c->get(VmOrdersController::class),
                     $c->get(SyncController::class),
                     $c->get(SettingsController::class),
-                    $c->get(Assets::class)
+                    $c->get(Assets::class),
+                    $c->get(Branding::class)
                 );
             }
         );
@@ -174,6 +189,18 @@ final class AdminServiceProvider extends AbstractServiceProvider
                     $c->get(ProviderService::class),
                     $c->get(ConnectionTester::class),
                     $c->get(ProviderAuthenticator::class)
+                );
+            }
+        );
+
+        $container->singleton(
+            AccountSyncAjaxController::class,
+            static function (Container $c): AccountSyncAjaxController {
+                return new AccountSyncAjaxController(
+                    $c->get(AccountSyncService::class),
+                    $c->get(UsageService::class),
+                    $c->get(ProviderService::class),
+                    $c->get(VmOrderRepository::class)
                 );
             }
         );
@@ -203,6 +230,10 @@ final class AdminServiceProvider extends AbstractServiceProvider
         $assets = $container->get(Assets::class);
         add_action('admin_enqueue_scripts', [$assets, 'enqueue']);
 
+        /** @var Branding $branding */
+        $branding = $container->get(Branding::class);
+        $branding->register();
+
         /** @var Notices $notices */
         $notices = $container->get(Notices::class);
         add_action('admin_notices', [$notices, 'render']);
@@ -223,6 +254,10 @@ final class AdminServiceProvider extends AbstractServiceProvider
         /** @var SyncAjaxController $syncAjax */
         $syncAjax = $container->get(SyncAjaxController::class);
         $syncAjax->register();
+
+        /** @var AccountSyncAjaxController $accountAjax */
+        $accountAjax = $container->get(AccountSyncAjaxController::class);
+        $accountAjax->register();
 
         $this->registerWooCommerceNotice();
     }

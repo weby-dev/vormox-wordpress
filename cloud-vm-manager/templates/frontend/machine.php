@@ -18,6 +18,8 @@
  * @var \CloudVmManager\Model\LogEntry[] $localActivity   Plugin activity log.
  * @var array<string, mixed>             $wallet          Wallet balance.
  * @var string                           $backUrl         URL of the machine list.
+ * @var string                           $panelUrl        Link that opens the machine at the provider.
+ * @var string                           $panelLabel      Label of that link.
  * @var int                              $refreshInterval Seconds between refreshes.
  */
 
@@ -46,9 +48,16 @@ $cvm_renews = $machine->getDateTime('renews_at');
                 ?>
             </h2>
         </div>
-        <span class="cvm-pill cvm-pill-<?php echo esc_attr($machine->getStatus()); ?>" data-cvm-live-status>
-            <?php echo esc_html($machine->getStatus()); ?>
-        </span>
+        <div class="cvm-header-actions">
+            <?php if ($panelUrl !== '') : ?>
+                <a class="cvm-button cvm-button-ghost" href="<?php echo esc_url($panelUrl); ?>" target="_blank" rel="noopener noreferrer">
+                    <?php echo esc_html($panelLabel); ?>
+                </a>
+            <?php endif; ?>
+            <span class="cvm-pill cvm-pill-<?php echo esc_attr($machine->getStatus()); ?>" data-cvm-live-status>
+                <?php echo esc_html($machine->getStatus()); ?>
+            </span>
+        </div>
     </header>
 
     <?php if ($lock['locked']) : ?>

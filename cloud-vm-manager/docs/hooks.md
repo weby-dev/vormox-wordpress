@@ -48,6 +48,8 @@ add_action(
 | `cloud_vm_manager_cron_jobs` | `string[] $jobs` | Job classes the cron manager owns. |
 | `cloud_vm_manager_http_args` | `array $args, ApiRequest $request` | WordPress HTTP arguments before a backend request is sent. |
 | `cloud_vm_manager_create_vm_body` | `array $body, VmOrder $order` | Body of a machine creation request. |
+| `cloud_vm_manager_logo_url` | `string $url` | Mark shown on the plugin screens, in the browser tab and beside the plugin in the plugin list. |
+| `cloud_vm_manager_panel_url` | `string $url, Provider $provider, VmOrder\|null $order` | Link that opens the provider panel, optionally at one machine. |
 
 ### Example: let shop managers manage providers
 
@@ -56,6 +58,21 @@ add_filter(
     'cloud_vm_manager_admin_capability',
     function () {
         return 'manage_woocommerce';
+    }
+);
+```
+
+### Example: use your own logo
+
+The shipped marks are placeholders. Replace
+`assets/images/vormox-mark.svg` and `assets/images/vormox-mark-mono.svg` to
+rebrand every surface, or point elsewhere without touching the plugin:
+
+```php
+add_filter(
+    'cloud_vm_manager_logo_url',
+    function () {
+        return get_stylesheet_directory_uri() . '/img/logo.svg';
     }
 );
 ```

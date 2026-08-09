@@ -27,7 +27,6 @@ defined('ABSPATH') || exit;
 final class Menu
 {
     private const MENU_POSITION = 56;
-    private const ICON = 'dashicons-cloud';
 
     /**
      * @var ProvidersController
@@ -59,13 +58,19 @@ final class Menu
      */
     private $assets;
 
+    /**
+     * @var Branding
+     */
+    private $branding;
+
     public function __construct(
         DashboardController $dashboard,
         ProvidersController $providers,
         VmOrdersController $vmOrders,
         SyncController $sync,
         SettingsController $settings,
-        Assets $assets
+        Assets $assets,
+        Branding $branding
     ) {
         $this->dashboard = $dashboard;
         $this->providers = $providers;
@@ -73,6 +78,7 @@ final class Menu
         $this->sync = $sync;
         $this->settings = $settings;
         $this->assets = $assets;
+        $this->branding = $branding;
     }
 
     /**
@@ -89,7 +95,7 @@ final class Menu
             $capability,
             DashboardController::PAGE,
             [$this->dashboard, 'render'],
-            self::ICON,
+            $this->branding->menuIcon(),
             self::MENU_POSITION
         );
 
@@ -138,6 +144,9 @@ final class Menu
             [$this->settings, 'render']
         );
 
-        $this->assets->setScreens(array_values(array_filter($hooks, 'is_string')));
+        $screens = array_values(array_filter($hooks, 'is_string'));
+
+        $this->assets->setScreens($screens);
+        $this->branding->setScreens($screens);
     }
 }

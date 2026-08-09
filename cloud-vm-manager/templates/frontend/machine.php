@@ -28,6 +28,7 @@ $cvm_renews = $machine->getDateTime('renews_at');
 ?>
 <div class="cvm-dashboard cvm-machine-view"
      data-machine-id="<?php echo esc_attr((string) $machine->id()); ?>"
+     data-cvm-building="<?php echo $machine->isBuilding() ? '1' : '0'; ?>"
      data-refresh-interval="<?php echo esc_attr((string) $refreshInterval); ?>">
 
     <header class="cvm-dashboard-header">
@@ -62,7 +63,12 @@ $cvm_renews = $machine->getDateTime('renews_at');
         </div>
     <?php endif; ?>
 
-    <?php if (!$machine->isProvisioned()) : ?>
+    <?php if ($machine->isBuilding()) : ?>
+        <div class="cvm-notice cvm-notice-info cvm-building">
+            <span class="cvm-spinner" aria-hidden="true"></span>
+            <?php esc_html_e('Your machine has been created and is starting up. This usually takes about a minute, and this page updates itself when it is ready.', 'cloud-vm-manager'); ?>
+        </div>
+    <?php elseif (!$machine->isProvisioned()) : ?>
         <div class="cvm-notice cvm-notice-info">
             <?php esc_html_e('This machine is still being deployed. Live data appears as soon as it is ready.', 'cloud-vm-manager'); ?>
         </div>

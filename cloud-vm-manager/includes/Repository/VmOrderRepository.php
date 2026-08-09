@@ -68,6 +68,7 @@ final class VmOrderRepository extends AbstractRepository
             'status' => '%s',
             'provisioning_status' => '%s',
             'attempts' => '%d',
+            'building_since' => '%s',
             'last_attempt_at' => '%s',
             'next_retry_at' => '%s',
             'currency' => '%s',
@@ -163,7 +164,7 @@ final class VmOrderRepository extends AbstractRepository
     public function dueForRetry(int $limit = 10): array
     {
         $sql = 'SELECT * FROM `' . $this->table() . '`'
-            . ' WHERE provisioning_status IN (%s, %s)'
+            . ' WHERE provisioning_status IN (%s, %s, %s)'
             . ' AND (next_retry_at IS NULL OR next_retry_at <= %s)'
             . ' ORDER BY next_retry_at ASC LIMIT %d';
 
@@ -172,6 +173,7 @@ final class VmOrderRepository extends AbstractRepository
             [
                 VmOrder::PROVISIONING_RETRYING,
                 VmOrder::PROVISIONING_QUEUED,
+                VmOrder::PROVISIONING_BUILDING,
                 $this->now(),
                 max(1, $limit),
             ]

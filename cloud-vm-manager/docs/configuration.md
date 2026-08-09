@@ -44,7 +44,7 @@ refreshes its provider cost.
 ### Provisioning
 | Setting | Default | Purpose |
 | --- | --- | --- |
-| `provisioning_retry_limit` | 5 | Attempts before a machine is marked failed. |
+| `provisioning_retry_limit` | 5 | Creation attempts before a machine is marked failed. A machine the backend confirmed it created is waited on instead, not retried. |
 | `provisioning_retry_delay` | 300 | Seconds between attempts, growing per attempt. |
 | `provisioning_gateway` | CASHFREE | Gateway named on the creation request. The endpoint rejects a request without one. |
 | `use_wallet_balance` | on | Settle the platform charge from the account wallet first. |
@@ -92,6 +92,7 @@ re-authenticated. Setting the constant avoids that.
 | --- | --- | --- |
 | `cvm_sync_catalogue` | `sync_interval` | Refresh the provider catalogue. |
 | `cvm_provisioning_retry` | every five minutes | Finish machines that are still pending. |
+| `cvm_provisioning_build_check` | one-off, ~20s after creation | Check a machine that has just been created, so a customer never waits for the next five minute tick. |
 | `cvm_maintenance` | daily | Prune expired cache rows, old logs and old sync runs. |
 
 ## Multisite

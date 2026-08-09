@@ -30,6 +30,7 @@ final class VmOrder extends AbstractModel
     public const PROVISIONING_PENDING = 'pending';
     public const PROVISIONING_QUEUED = 'queued';
     public const PROVISIONING_RUNNING = 'running';
+    public const PROVISIONING_BUILDING = 'building';
     public const PROVISIONING_COMPLETED = 'completed';
     public const PROVISIONING_RETRYING = 'retrying';
     public const PROVISIONING_FAILED = 'failed';
@@ -102,6 +103,7 @@ final class VmOrder extends AbstractModel
             'status' => 'string',
             'provisioning_status' => 'string',
             'attempts' => 'int',
+            'building_since' => 'string',
             'last_attempt_at' => 'string',
             'next_retry_at' => 'string',
             'currency' => 'string',
@@ -209,6 +211,40 @@ final class VmOrder extends AbstractModel
     public function isTerminated(): bool
     {
         return $this->getStatus() === self::STATUS_TERMINATED;
+    }
+
+    /**
+     * Whether the backend confirmed the machine and it is still starting up.
+     *
+     * A building machine has been paid for and its identifiers are stored, so
+     * it is waited on rather than retried.
+     */
+    public function isBuilding(): bool
+    {
+        return $this->getRemoteVmId() > 0
+            && $this->getProvisioningStatus() === self::PROVISIONING_BUILDING;
+    }
+
+    /**
+     * When the machine was first reported as created, empty when it was not.
+     */
+    public function getBuildingSince(): string
+    {
+        return $this->getString('building_since');
+    }
+
+    /**
+     * Seconds the machine has been starting up, zero when it is not building.
+     */
+    public function buildingFor(): int
+    {
+        $since = strtotime($this->getBuildingSince() . ' UTC');
+
+        if ($since === false || $this->getBuildingSince() === '') {
+            return 0;
+        }
+
+        return max(0, time() - $since);
     }
 
     public function getAttempts(): int

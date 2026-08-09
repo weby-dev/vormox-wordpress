@@ -26,6 +26,7 @@ use CloudVmManager\Service\Billing\UpgradeService;
 use CloudVmManager\Service\Provider\ProviderGateway;
 use CloudVmManager\Service\Provisioning\GatewayResolver;
 use CloudVmManager\Service\Vm\VmControlService;
+use CloudVmManager\Service\Provisioning\ProvisioningService;
 use CloudVmManager\Service\Vm\VmMetricsService;
 use CloudVmManager\Service\Vm\VmService;
 use CloudVmManager\Service\Vm\WalletService;
@@ -145,7 +146,8 @@ final class FrontendServiceProvider extends AbstractServiceProvider
                 return new DashboardAjaxController(
                     $c->get(VmService::class),
                     $c->get(VmMetricsService::class),
-                    $c->get(WalletService::class)
+                    $c->get(WalletService::class),
+                    $c->get(ProvisioningService::class)
                 );
             }
         );

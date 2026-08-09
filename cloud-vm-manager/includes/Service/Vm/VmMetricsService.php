@@ -101,7 +101,11 @@ final class VmMetricsService
     {
         $timeframe = $this->normalizeTimeframe($timeframe);
 
-        if ($order->getRemoteVmId() <= 0) {
+        /*
+         * A machine that is still starting up already has an identifier, but it
+         * has no metrics to report yet, so it is not asked for any.
+         */
+        if (!$order->isProvisioned()) {
             return $this->emptyMetrics(__('This machine is not ready yet.', 'cloud-vm-manager'));
         }
 

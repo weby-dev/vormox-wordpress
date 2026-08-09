@@ -42,8 +42,44 @@ pricing identifiers, months, quantity, the wallet flag and the coupon code. No
 price the store calculated is ever submitted; the backend validates the pricing
 identifiers itself.
 
-Because the creation response returns the payment, order and group identifiers
-but not the machine, the overview is read back and matched on them.
+### What the creation response gives back
+
+```json
+{
+  "orderId": 1258,
+  "vmid": 125,
+  "paymentId": 1258,
+  "groupId": "BULK-1786303881790-0C39",
+  "vmip": "10.0.0.35",
+  "message": "Paid fully. Provisioning started.",
+  "vms": [
+    { "dbVmId": 675, "vmName": "dev-ubuntu-4gb-20gb", "vmid": 125, "vmip": "10.0.0.35" }
+  ],
+  "status": "COMPLETED"
+}
+```
+
+Every field of `vms[]` is stored the moment the call returns:
+
+| Response field | Stored as | Used for |
+| --- | --- | --- |
+| `dbVmId` | `remote_vm_id` | Every documented endpoint path |
+| `vmid` | `proxmox_vmid` | Support and diagnostics only |
+| `vmName` | `hostname` | Shown to the customer |
+| `vmip` | `ip_address` | Shown to the customer |
+
+`status: COMPLETED` describes the payment, not the machine — the message beside
+it says provisioning has only just started. A machine takes about a minute to
+build, so it is polled on `/api/users/orders/{dbVmId}/details` until it answers,
+and only then is it shown as ready.
+
+A creation carrying a quantity returns one entry per machine under a bulk group
+identifier. Each entry becomes its own local row, so a customer can manage every
+machine they bought, and the billed amounts are divided across those rows
+without changing the order total.
+
+The overview is only read back when a response names no machine at all, matching
+on the payment, order and group identifiers instead.
 
 ## Machine management
 
@@ -113,6 +149,11 @@ nothing is lost.
 | `/api/users/zones` | name, country, description |
 | `/api/pricing/*/ram\|disk\|bandwidth` | the specification value, falling back to the leading number of the documented `label` |
 | `/api/users/orders/overview` | machine id, hostname, address |
+| `/api/users/orders/{vmId}/details` | operating system, backend user id |
+
+A detail record that omits a field never blanks what the creation response
+already supplied, so a sparse response cannot erase a machine's address or
+name.
 
 If you can supply a real response for any of these, the mapping can be pinned
 exactly.

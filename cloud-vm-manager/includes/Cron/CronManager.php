@@ -13,6 +13,7 @@ namespace CloudVmManager\Cron;
 use CloudVmManager\Contracts\JobInterface;
 use CloudVmManager\Contracts\LoggerInterface;
 use CloudVmManager\Model\LogEntry;
+use CloudVmManager\Service\Provisioning\ProvisioningService;
 use Throwable;
 
 defined('ABSPATH') || exit;
@@ -144,6 +145,12 @@ final class CronManager
         foreach (array_keys($this->jobs) as $hook) {
             wp_clear_scheduled_hook($hook);
         }
+
+        /*
+         * One-off build checks carry an argument, which wp_clear_scheduled_hook
+         * matches on, so they are unscheduled by hook instead.
+         */
+        wp_unschedule_hook(ProvisioningService::BUILD_CHECK_HOOK);
     }
 
     /**

@@ -299,6 +299,7 @@ final class Schema
             status varchar(32) NOT NULL DEFAULT 'pending',
             provisioning_status varchar(32) NOT NULL DEFAULT 'pending',
             attempts smallint(5) unsigned NOT NULL DEFAULT 0,
+            building_since datetime NULL,
             last_attempt_at datetime NULL,
             next_retry_at datetime NULL,
             currency varchar(10) NOT NULL DEFAULT '',

@@ -92,6 +92,10 @@ final class CronServiceProvider extends AbstractServiceProvider
         $manager = $container->get(CronManager::class);
         $manager->registerHooks();
 
+        /** @var ProvisioningJob $provisioning */
+        $provisioning = $container->get(ProvisioningJob::class);
+        $provisioning->registerBuildCheck();
+
         add_action(
             'init',
             static function () use ($manager): void {

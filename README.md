@@ -21,7 +21,9 @@ The plugin lives in [`cloud-vm-manager/`](cloud-vm-manager).
   updated and removed change detection, on a schedule or on demand.
 * A **Cloud Virtual Machine** WooCommerce product type priced from the synchronised catalogue,
   showing provider cost, selling price, markup and profit margin.
-* Automatic provisioning when an order is paid, with classified retries.
+* Automatic provisioning when an order is paid: the creation response names the
+  machine, so its identifier, address and name are stored immediately, and the
+  machine is polled every few seconds until it has finished starting up.
 * A customer dashboard with live status, metrics, usage charts, storage, activity, wallet and
   invoices.
 * Power controls, OS reinstall, password reset, MAC regeneration and network repair.
@@ -69,7 +71,7 @@ Every phase is verified before it lands:
 | `php -l` on every file | clean |
 | PHPCompatibility, `testVersion 7.4-` | 0 issues across 7.4 → 8.4 |
 | PSR-12 | clean apart from the mandatory `ABSPATH` guard and the WooCommerce method names the product class must keep |
-| Functional suites | 8 suites, 846 checks |
+| Functional suites | 9 suites, 910 checks |
 
 The suites boot the plugin against stubbed WordPress and WooCommerce with an
 in-memory `wpdb` that really executes the statements the repositories generate,

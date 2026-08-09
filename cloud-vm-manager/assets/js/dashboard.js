@@ -16,6 +16,9 @@
     var CHART_PADDING = 8;
     var SVG_NS = 'http://www.w3.org/2000/svg';
 
+    /* A machine takes about a minute to build, so it is checked every 8 seconds. */
+    var BUILD_POLL_INTERVAL = 8000;
+
     /**
      * Post an action to admin-ajax.php.
      *
@@ -251,15 +254,48 @@
      * @param {HTMLElement} root Element carrying data-machine-id.
      */
     function refreshStatus(root) {
-        request('cvm_vm_status', { machine_id: root.getAttribute('data-machine-id') })
+        return request('cvm_vm_status', { machine_id: root.getAttribute('data-machine-id') })
             .then(function (envelope) {
                 if (envelope && envelope.success && envelope.data.status) {
                     applyStatus(root, envelope.data.status);
+
+                    return envelope.data.status;
                 }
+
+                return null;
             })
             .catch(function () {
                 /* The stored status stays on screen. */
+                return null;
             });
+    }
+
+    /**
+     * Watch a machine that is still starting up.
+     *
+     * A new machine takes about a minute, so it is polled far more often than
+     * a running one, and the page is reloaded once it is ready because the
+     * specifications and the controls only exist in the rendered markup.
+     *
+     * @param {HTMLElement} root Element carrying data-machine-id.
+     */
+    function watchWhileBuilding(root) {
+        if (root.getAttribute('data-cvm-building') !== '1') {
+            return;
+        }
+
+        var timer = window.setInterval(function () {
+            if (document.hidden) {
+                return;
+            }
+
+            refreshStatus(root).then(function (status) {
+                if (status && status.ready) {
+                    window.clearInterval(timer);
+                    window.location.reload();
+                }
+            });
+        }, BUILD_POLL_INTERVAL);
     }
 
     /**
@@ -582,11 +618,14 @@
 
         document.querySelectorAll('.cvm-machine-card[data-machine-id]').forEach(function (card) {
             refreshStatus(card);
+            watchWhileBuilding(card);
         });
 
         if (!machineView) {
             return;
         }
+
+        watchWhileBuilding(machineView);
 
         refreshMetrics(machineView);
 

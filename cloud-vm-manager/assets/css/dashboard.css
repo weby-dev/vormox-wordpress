@@ -607,3 +607,32 @@
         grid-template-columns: 60px 1fr 48px;
     }
 }
+
+/* A machine that was created and is still starting up. */
+.cvm-building {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cvm-spinner {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 14px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: cvm-spin 0.9s linear infinite;
+}
+
+@keyframes cvm-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cvm-spinner {
+        animation-duration: 4s;
+    }
+}

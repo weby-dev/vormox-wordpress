@@ -12,6 +12,7 @@ namespace CloudVmManager\Ajax;
 
 use CloudVmManager\Admin\Access;
 use CloudVmManager\Model\VmOrder;
+use CloudVmManager\Service\Provisioning\ProvisioningService;
 use CloudVmManager\Service\Vm\VmMetricsService;
 use CloudVmManager\Service\Vm\VmService;
 use CloudVmManager\Service\Vm\WalletService;
@@ -47,11 +48,21 @@ final class DashboardAjaxController extends AbstractAjaxController
      */
     private $wallet;
 
-    public function __construct(VmService $machines, VmMetricsService $metrics, WalletService $wallet)
-    {
+    /**
+     * @var ProvisioningService
+     */
+    private $provisioning;
+
+    public function __construct(
+        VmService $machines,
+        VmMetricsService $metrics,
+        WalletService $wallet,
+        ProvisioningService $provisioning
+    ) {
         $this->machines = $machines;
         $this->metrics = $metrics;
         $this->wallet = $wallet;
+        $this->provisioning = $provisioning;
     }
 
     public function register(): void
@@ -92,6 +103,19 @@ final class DashboardAjaxController extends AbstractAjaxController
     public function status(): void
     {
         $machine = $this->requireOwnedMachine();
+
+        /*
+         * A customer watching a machine that is starting up is the fastest
+         * signal there is, so this poll finishes the provisioning itself rather
+         * than leaving the customer waiting for the next scheduled check. The
+         * work is a single detail request and is locked against the job, so two
+         * of them can never run at once.
+         */
+        if ($machine->isBuilding()) {
+            $this->provisioning->refresh($machine->id());
+            $machine = $this->machines->findOwned($machine->id(), get_current_user_id()) ?? $machine;
+        }
+
         $metrics = $this->metrics->metrics($machine);
         $lock = $this->machines->lockStatus($machine);
 
@@ -101,6 +125,7 @@ final class DashboardAjaxController extends AbstractAjaxController
                     'live' => (string) $metrics['current']['status'],
                     'stored' => $machine->getStatus(),
                     'provisioning' => $machine->getProvisioningStatus(),
+                    'ready' => $machine->isProvisioned(),
                     'locked' => $lock['locked'],
                     'message' => $lock['message'],
                     'ip_address' => $machine->getIpAddress(),

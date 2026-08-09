@@ -22,12 +22,15 @@ use CloudVmManager\Support\Arr;
 defined('ABSPATH') || exit;
 
 /**
- * Finds the machine that a creation request produced.
+ * Reads back the machine that a creation request produced.
  *
- * The create endpoint answers with the payment, order and group identifiers but
- * not with the machine identifier, so the order overview is read back and
- * matched on those identifiers. The detail endpoint then fills in the
- * hypervisor identifier, the address and the name.
+ * When the creation response named the machine, its identifier is already
+ * stored and the detail endpoint is asked directly. That call is also the
+ * readiness test: a machine takes up to a minute to build, and until it answers
+ * its own detail endpoint there is nothing to promote.
+ *
+ * The overview scan is the fallback for the case where no machine was named,
+ * matching on the payment, order and group identifiers instead.
  */
 final class VmResolver
 {
@@ -49,10 +52,19 @@ final class VmResolver
     /**
      * Locate the machine belonging to an order and return the fields to store.
      *
-     * @return array<string, mixed> Empty when the machine is not listed yet.
+     * @return array<string, mixed> Empty while the machine is still building or
+     *                              is not listed by the backend yet.
      */
     public function resolve(Provider $provider, VmOrder $order): array
     {
+        $vmId = $order->getRemoteVmId();
+
+        if ($vmId > 0) {
+            $details = $this->fetchDetails($provider, $vmId);
+
+            return $details === null ? [] : array_merge(['remote_vm_id' => $vmId], $this->fields($details));
+        }
+
         $entry = $this->findInOverview($provider, $order);
 
         if ($entry === []) {
@@ -65,7 +77,12 @@ final class VmResolver
             return [];
         }
 
-        return array_merge(['remote_vm_id' => $vmId], $this->details($provider, $vmId, $entry));
+        $details = $this->fetchDetails($provider, $vmId);
+
+        return array_merge(
+            ['remote_vm_id' => $vmId],
+            $this->fields($details === null ? $entry : array_merge($entry, $details))
+        );
     }
 
     /**
@@ -169,40 +186,62 @@ final class VmResolver
     }
 
     /**
-     * Read the machine detail record, falling back to the overview entry.
+     * Read the machine detail record.
      *
-     * @param array<string, mixed> $entry
-     *
-     * @return array<string, mixed>
+     * @return array<string, mixed>|null Null while the machine is not answering
+     *                                   yet, which is the normal state for the
+     *                                   first minute of its life.
      */
-    private function details(Provider $provider, int $vmId, array $entry): array
+    private function fetchDetails(Provider $provider, int $vmId): ?array
     {
-        $payload = $entry;
-
         try {
             $response = $this->gateway->request(
                 $provider,
                 ApiRequest::get(Endpoints::orderDetails($vmId)),
                 ['channel' => LogEntry::CHANNEL_PROVISIONING]
             );
-
-            if ($response->isSuccessful()) {
-                $payload = array_merge($entry, $response->data());
-            }
         } catch (ApiException $exception) {
-            /* The overview entry is enough to record the machine. */
+            return null;
         }
 
+        return $response->isSuccessful() ? $response->data() : null;
+    }
+
+    /**
+     * Map a machine payload onto the stored columns.
+     *
+     * @param array<string, mixed> $payload
+     *
+     * @return array<string, mixed>
+     */
+    private function fields(array $payload): array
+    {
         $proxmoxVmid = Arr::first($payload, ['proxmoxVmid', 'vmid'], 0);
         $remoteUserId = Arr::first($payload, ['userId', 'ownerId'], 0);
 
-        return [
+        $fields = [
             'proxmox_vmid' => is_numeric($proxmoxVmid) ? (int) $proxmoxVmid : 0,
             'remote_user_id' => is_numeric($remoteUserId) ? (int) $remoteUserId : 0,
             'hostname' => (string) Arr::first($payload, ['vmName', 'serverName', 'name', 'hostname'], ''),
-            'ip_address' => (string) Arr::first($payload, ['ipAddress', 'ip', 'vmIp'], ''),
+            'ip_address' => (string) Arr::first($payload, ['vmip', 'ipAddress', 'ip', 'vmIp'], ''),
             'os_name' => (string) Arr::first($payload, ['osName', 'isoName', 'osType'], ''),
-            'meta' => $payload,
         ];
+
+        /*
+         * The creation response already supplied the name, the address and the
+         * hypervisor identifier. A detail record that omits one of them must
+         * not blank what is already known, so empty values are dropped rather
+         * than written.
+         */
+        $fields = array_filter(
+            $fields,
+            static function ($value) {
+                return $value !== '' && $value !== 0;
+            }
+        );
+
+        $fields['meta'] = $payload;
+
+        return $fields;
     }
 }

@@ -59,6 +59,36 @@ final class ProvisioningJob implements JobInterface
         return CronManager::EVERY_FIVE_MINUTES;
     }
 
+    /**
+     * Listen for the one-off check queued when a machine is created.
+     *
+     * A machine builds in about a minute, so waiting for the next five minute
+     * tick would make the customer stare at a spinner for no reason.
+     */
+    public function registerBuildCheck(): void
+    {
+        add_action(ProvisioningService::BUILD_CHECK_HOOK, [$this, 'checkOne'], 10, 1);
+    }
+
+    /**
+     * Resolve one machine that was created a moment ago.
+     *
+     * @param mixed $orderId Local order row identifier passed by the event.
+     */
+    public function checkOne($orderId = 0): void
+    {
+        $result = $this->provisioning->refresh((int) $orderId);
+
+        if ($result === null || !$result->isCompleted()) {
+            return;
+        }
+
+        $this->logger->info(
+            sprintf('Machine of row %d finished starting up.', (int) $orderId),
+            ['channel' => LogEntry::CHANNEL_CRON]
+        );
+    }
+
     public function run(): void
     {
         $results = $this->provisioning->processRetryQueue(self::BATCH_SIZE);

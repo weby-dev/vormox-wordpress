@@ -55,7 +55,9 @@ defined('ABSPATH') || exit;
         <div class="cvm-machine-grid">
             <?php foreach ($machines as $cvm_machine) : ?>
                 <?php $cvm_link = add_query_arg('cvm_machine', $cvm_machine->id(), $baseUrl); ?>
-                <article class="cvm-machine-card" data-machine-id="<?php echo esc_attr((string) $cvm_machine->id()); ?>">
+                <article class="cvm-machine-card"
+                         data-machine-id="<?php echo esc_attr((string) $cvm_machine->id()); ?>"
+                         data-cvm-building="<?php echo $cvm_machine->isBuilding() ? '1' : '0'; ?>">
                     <header class="cvm-machine-card-header">
                         <h3>
                             <a href="<?php echo esc_url($cvm_link); ?>">
